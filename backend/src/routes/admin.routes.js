@@ -1,0 +1,12 @@
+const router = require('express').Router();
+const ctrl = require('../controllers/admin.controller');
+const { auth, authorize } = require('../middleware/auth.middleware');
+router.get('/stats', auth, authorize('view_reports'), ctrl.getStats);
+router.get('/recent-orders', auth, authorize('view_reports'), ctrl.getRecentOrders);
+router.get('/revenue-chart', auth, authorize('view_reports'), ctrl.getRevenueChart);
+router.get('/top-products', auth, authorize('view_reports'), ctrl.getTopProducts);
+router.get('/users', auth, authorize('manage_users'), ctrl.getUsers);
+router.put('/users/:id/status', auth, authorize('manage_users'), ctrl.toggleUserStatus);
+router.get('/settings', auth, authorize('manage_settings'), ctrl.getSettings);
+router.put('/settings', auth, authorize('manage_settings'), ctrl.updateSettings);
+module.exports = router;

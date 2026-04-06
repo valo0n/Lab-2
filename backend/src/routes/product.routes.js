@@ -1,0 +1,11 @@
+const router = require('express').Router();
+const ctrl = require('../controllers/product.controller');
+const { auth, authorize } = require('../middleware/auth.middleware');
+const { uploadMultiple } = require('../middleware/upload.middleware');
+router.get('/', ctrl.getAll);
+router.get('/:slug', ctrl.getBySlug);
+router.get('/:id/related', ctrl.getRelated);
+router.post('/', auth, authorize('manage_products'), uploadMultiple, ctrl.create);
+router.put('/:id', auth, authorize('manage_products'), uploadMultiple, ctrl.update);
+router.delete('/:id', auth, authorize('manage_products'), ctrl.delete);
+module.exports = router;

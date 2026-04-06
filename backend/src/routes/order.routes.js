@@ -1,0 +1,11 @@
+const router = require('express').Router();
+const ctrl = require('../controllers/order.controller');
+const { auth, authorize } = require('../middleware/auth.middleware');
+router.post('/', auth, ctrl.create);
+router.get('/', auth, ctrl.getMyOrders);
+router.get('/track/:orderNumber', ctrl.trackOrder);
+router.get('/:id', auth, ctrl.getById);
+router.get('/admin/all', auth, authorize('manage_orders'), ctrl.getAllOrders);
+router.put('/:id/status', auth, authorize('update_order_status'), ctrl.updateStatus);
+router.put('/:id/tracking', auth, authorize('update_order_status'), ctrl.addTracking);
+module.exports = router;
