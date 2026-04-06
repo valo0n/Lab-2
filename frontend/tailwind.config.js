@@ -5,7 +5,11 @@ export default {
     "./src/**/*.{js,ts,jsx,tsx}",
   ],
   theme: {
-    extend: {},
+    extend: {
+      colors: {
+        'clicon-blue': '#1B6392', // The exact blue from your image
+      }
+    },
   },
   plugins: [],
 }
