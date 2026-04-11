@@ -5,6 +5,7 @@ import Navigation from "../components/Layout/Navigation";
 import HeroSection from "../components/homepage/HeroSection";
 import FeatureStrips from "../components/homepage/FeatureStrips";
 import BestDealsSection from "../components/homepage/BestDealsSection";
+import ShopWithCategories from "../components/homepage/ShopWithCategories";
 export default function HomePage() {
   return (
     <div className="min-h-screen bg-gray-50 font-sans">
@@ -16,6 +17,7 @@ export default function HomePage() {
         <HeroSection />
         <FeatureStrips />
         <BestDealsSection />
+        <ShopWithCategories />
       </main>
       <Footer />
     </div>
