@@ -11,6 +11,7 @@ import FeaturedProducts from "../components/homepage/FeaturedProducts";
 import TwoSideBanners from "../components/homepage/TwoSideBanners";
 import ComputerAccessories from "../components/homepage/ComputerAccessories";
 import MacBookProBanner from "../components/homepage/MacBookProBanner";
+import FourColumnLists from "../components/homepage/FourColumnLists";
 export default function HomePage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -32,6 +33,7 @@ export default function HomePage() {
         <TwoSideBanners />
         <ComputerAccessories />
         <MacBookProBanner />
+        <FourColumnLists />
       </main>
       <Footer />
     </div>
