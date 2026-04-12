@@ -9,6 +9,7 @@ import BestDealsSection from "../components/homepage/BestDealsSection";
 import ShopWithCategories from "../components/homepage/ShopWithCategories";
 import FeaturedProducts from "../components/homepage/FeaturedProducts";
 import TwoSideBanners from "../components/homepage/TwoSideBanners";
+import ComputerAccessories from "../components/homepage/ComputerAccessories";
 export default function HomePage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -27,8 +28,8 @@ export default function HomePage() {
         <BestDealsSection />
         <ShopWithCategories />
         <FeaturedProducts />
-        <TwoSideBanners />
-        
+        <TwoSideBanners />  
+        <ComputerAccessories />
       </main>
       <Footer />
     </div>
