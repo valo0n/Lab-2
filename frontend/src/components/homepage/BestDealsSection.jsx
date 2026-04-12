@@ -124,30 +124,34 @@ export default function BestDealsSection() {
   }, []);
 
   const TimeBox = ({ value, label }) => (
-    <div className="bg-dark text-white px-3 py-2 rounded text-center min-w-[48px]">
-      <div className="font-bold text-lg leading-none">
+    <div className="bg-dark text-white px-2 sm:px-3 py-1.5 sm:py-2 rounded text-center min-w-[38px] sm:min-w-[48px]">
+      <div className="font-bold text-sm sm:text-lg leading-none">
         {String(value).padStart(2, "0")}
       </div>
-      <div className="text-[9px] uppercase mt-0.5 text-gray-300">{label}</div>
+      <div className="text-[8px] sm:text-[9px] uppercase mt-0.5 text-gray-300">
+        {label}
+      </div>
     </div>
   );
 
   return (
-    <section className="max-w-7xl mx-auto px-4 py-8">
+    <section className="max-w-7xl mx-auto px-3 sm:px-4 py-6 sm:py-8">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6 flex-wrap gap-4">
-        <div className="flex items-center gap-4">
-          <h2 className="text-2xl font-bold text-dark">Best Deals</h2>
-          <span className="text-dark-300 text-sm hidden md:inline">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 sm:mb-6 gap-3 sm:gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+          <h2 className="text-xl sm:text-2xl font-bold text-dark">
+            Best Deals
+          </h2>
+          <span className="text-dark-300 text-xs sm:text-sm hidden lg:inline">
             Don't wait. The time will never be just right.
           </span>
         </div>
 
-        <div className="flex items-center gap-3">
-          <span className="text-dark text-sm font-semibold">
+        <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+          <span className="text-dark text-xs sm:text-sm font-semibold">
             Deals ends in:
           </span>
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-0.5 sm:gap-1">
             <TimeBox value={time.days} label="Days" />
             <span className="text-dark font-bold">:</span>
             <TimeBox value={time.hours} label="Hour" />
@@ -158,15 +162,15 @@ export default function BestDealsSection() {
           </div>
           <a
             href="#"
-            className="text-primary font-semibold text-sm hover:underline ml-2 hidden md:inline"
+            className="text-primary font-semibold text-xs sm:text-sm hover:underline ml-auto sm:ml-2 hidden md:inline"
           >
-            Browse All Product →
+            Browse All →
           </a>
         </div>
       </div>
 
-      {/* Product grid */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+      {/* Product grid — 2 cols mobile, 3 tablet, 4 lg, 5 xl */}
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4">
         {dealProducts.map((product, i) => (
           <ProductCard key={i} product={product} />
         ))}

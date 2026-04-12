@@ -9,23 +9,25 @@ const features = [
 
 export default function FeatureStrips() {
   return (
-    <section className="max-w-7xl mx-auto px-4 py-4">
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+    <section className="max-w-7xl mx-auto px-3 sm:px-4 py-3 sm:py-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
         {features.map((feature, i) => {
           const Icon = feature.icon;
           return (
             <div
               key={i}
-              className="flex items-center gap-3 p-4 bg-white border border-gray-100 rounded-lg hover:shadow-card transition-shadow"
+              className="flex items-center gap-2 sm:gap-3 p-3 sm:p-4 bg-white border border-gray-100 rounded-lg hover:shadow-card transition-shadow"
             >
-              <div className="w-12 h-12 bg-primary-50 rounded-full flex items-center justify-center text-primary flex-shrink-0">
-                <Icon size={22} />
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-primary-50 rounded-full flex items-center justify-center text-primary flex-shrink-0">
+                <Icon size={18} className="sm:w-[22px] sm:h-[22px]" />
               </div>
-              <div>
-                <h4 className="font-semibold text-dark text-sm">
+              <div className="min-w-0">
+                <h4 className="font-semibold text-dark text-xs sm:text-sm truncate">
                   {feature.title}
                 </h4>
-                <p className="text-dark-300 text-xs">{feature.desc}</p>
+                <p className="text-dark-300 text-[10px] sm:text-xs truncate">
+                  {feature.desc}
+                </p>
               </div>
             </div>
           );
