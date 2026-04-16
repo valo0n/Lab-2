@@ -1,26 +1,32 @@
-import { useState } from 'react';
+import { useState } from "react";
 
 export default function NewsletterSection() {
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState("");
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log('Subscribed:', email);
-    setEmail('');
+    console.log("Subscribed:", email);
+    setEmail("");
   };
 
   return (
     <section className="bg-accent-blue text-white">
       <div className="max-w-7xl mx-auto px-3 sm:px-4 py-8 sm:py-10">
         <div className="text-center mb-4 sm:mb-6">
-          <h2 className="text-xl sm:text-2xl font-bold mb-2">Subscribe to our newsletter</h2>
+          <h2 className="text-xl sm:text-2xl font-bold mb-2">
+            Subscribe to our newsletter
+          </h2>
           <p className="text-gray-200 text-xs sm:text-sm max-w-2xl mx-auto">
-            Praesent tortor lacus, vehicula sagittis dapibus, sodales ad. Suspendisse vitae arcu vel
-            metus. Donec semper porttitor sodales viverra mauris.
+            Praesent tortor lacus, vehicula sagittis dapibus, sodales ad.
+            Suspendisse vitae arcu vel metus. Donec semper porttitor sodales
+            viverra mauris.
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="max-w-xl mx-auto flex flex-col sm:flex-row gap-2">
+        <form
+          onSubmit={handleSubmit}
+          className="max-w-xl mx-auto flex flex-col sm:flex-row gap-2"
+        >
           <input
             type="email"
             value={email}
