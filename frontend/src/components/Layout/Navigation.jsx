@@ -1,16 +1,30 @@
-import { FiMenu, FiPhone, FiX } from "react-icons/fi";
+import { useState } from "react";
+import { FiMenu, FiPhone, FiX, FiChevronDown } from "react-icons/fi";
+import MegaMenu from "./MegaMenu";
 
 export default function Navigation({ mobileOpen, onMobileClose }) {
+  const [megaOpen, setMegaOpen] = useState(false);
+
   return (
     <>
-      {/* Desktop navigation */}
       <div className="hidden lg:block bg-white border-b border-gray-100">
         <div className="max-w-7xl mx-auto px-4 h-14 flex items-center gap-6">
-          <button className="flex items-center gap-2 bg-gray-50 px-4 h-10 rounded text-sm font-medium text-dark hover:bg-gray-100 transition-colors">
-            <FiMenu size={18} />
-            All Category
-            <span className="text-dark-300">▾</span>
-          </button>
+          {/* Wrapper relative around button so MegaMenu anchors here */}
+          <div className="relative">
+            <button
+              onClick={() => setMegaOpen(!megaOpen)}
+              className={`flex items-center gap-2 px-4 h-10 rounded text-sm font-medium transition-colors ${megaOpen ? "bg-primary text-white" : "bg-gray-50 text-dark hover:bg-gray-100"}`}
+            >
+              <FiMenu size={18} />
+              All Category
+              <FiChevronDown
+                size={14}
+                className={`transition-transform ${megaOpen ? "rotate-180" : ""}`}
+              />
+            </button>
+
+            <MegaMenu isOpen={megaOpen} onClose={() => setMegaOpen(false)} />
+          </div>
 
           <nav className="flex items-center gap-6 text-sm font-medium text-dark">
             <a
@@ -40,7 +54,7 @@ export default function Navigation({ mobileOpen, onMobileClose }) {
         </div>
       </div>
 
-      {/* Mobile drawer overlay */}
+      {/* Mobile drawer */}
       {mobileOpen && (
         <div
           className="lg:hidden fixed inset-0 bg-black/50 z-50"
@@ -48,9 +62,8 @@ export default function Navigation({ mobileOpen, onMobileClose }) {
         />
       )}
 
-      {/* Mobile drawer */}
       <aside
-        className={`lg:hidden fixed top-0 left-0 h-full w-72 bg-white z-50 transform transition-transform duration-300 ${mobileOpen ? "translate-x-0" : "-translate-x-full"}`}
+        className={`lg:hidden fixed top-0 left-0 h-full w-72 bg-white z-50 transform transition-transform duration-300 overflow-y-auto ${mobileOpen ? "translate-x-0" : "-translate-x-full"}`}
       >
         <div className="flex items-center justify-between p-4 border-b border-gray-100">
           <div className="flex items-center gap-2">
@@ -68,58 +81,54 @@ export default function Navigation({ mobileOpen, onMobileClose }) {
           <div className="text-xs uppercase text-dark-300 font-semibold mb-2">
             Categories
           </div>
-          <a
-            href="#"
-            className="block py-3 text-dark hover:text-primary border-b border-gray-100"
-          >
-            🔥 Best Sellers
-          </a>
-          <a
-            href="#"
-            className="block py-3 text-dark hover:text-primary border-b border-gray-100"
-          >
-            Today's Deals
-          </a>
-          <a
-            href="#"
-            className="block py-3 text-dark hover:text-primary border-b border-gray-100"
-          >
-            New Arrivals
-          </a>
-          <a
-            href="#"
-            className="block py-3 text-dark hover:text-primary border-b border-gray-100"
-          >
-            Customer Service
-          </a>
-          <a
-            href="#"
-            className="block py-3 text-dark hover:text-primary border-b border-gray-100"
-          >
-            Need Help
-          </a>
+          {[
+            "🔥 Best Sellers",
+            "Today's Deals",
+            "New Arrivals",
+            "Customer Service",
+            "Need Help",
+          ].map((label) => (
+            <a
+              key={label}
+              href="#"
+              className="block py-3 text-dark hover:text-primary border-b border-gray-100"
+            >
+              {label}
+            </a>
+          ))}
+
+          <div className="text-xs uppercase text-dark-300 font-semibold mb-2 mt-6">
+            Shop by Category
+          </div>
+          {[
+            "💻 Computer & Laptop",
+            "📱 SmartPhone",
+            "🎧 Headphones",
+            "⌨️ Accessories",
+            "📷 Camera & Photo",
+            "📺 TV & Homes",
+          ].map((label) => (
+            <a
+              key={label}
+              href="#"
+              className="block py-3 text-dark hover:text-primary border-b border-gray-100"
+            >
+              {label}
+            </a>
+          ))}
 
           <div className="text-xs uppercase text-dark-300 font-semibold mb-2 mt-6">
             Account
           </div>
-          <a
-            href="#"
-            className="block py-3 text-dark hover:text-primary border-b border-gray-100"
-          >
-            Login / Register
-          </a>
-          <a
-            href="#"
-            className="block py-3 text-dark hover:text-primary border-b border-gray-100"
-          >
-            Wishlist
-          </a>
-          <a
-            href="#"
-            className="block py-3 text-dark hover:text-primary border-b border-gray-100"
-          >
-            My Orders
-          </a>
+          {["Login / Register", "Wishlist", "My Orders"].map((label) => (
+            <a
+              key={label}
+              href="#"
+              className="block py-3 text-dark hover:text-primary border-b border-gray-100"
+            >
+              {label}
+            </a>
+          ))}
 
           <div className="mt-6 p-3 bg-primary-50 rounded flex items-center gap-2 text-sm text-dark">
             <FiPhone size={16} className="text-primary" />
