@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { FiEye, FiEyeOff } from 'react-icons/fi';
 
 export default function AccountPopup({ isOpen, onClose }) {
@@ -40,7 +41,7 @@ export default function AccountPopup({ isOpen, onClose }) {
             <div>
               <div className="flex items-center justify-between mb-1.5">
                 <label className="text-xs text-dark-300">Password</label>
-                <a href="#" className="text-xs text-info hover:underline">Forget Password</a>
+                <Link to="/forgot-password" onClick={onClose} className="text-xs text-info hover:underline">Forget Password</Link>
               </div>
               <div className="relative">
                 <input
@@ -73,9 +74,13 @@ export default function AccountPopup({ isOpen, onClose }) {
           {/* Create account */}
           <div className="text-center mt-4">
             <p className="text-xs text-dark-300 mb-2">Don't have account</p>
-            <button className="w-full border border-gray-200 text-primary hover:bg-gray-50 text-xs font-bold py-2.5 rounded transition-colors">
+            <Link
+              to="/signup"
+              onClick={onClose}
+              className="block w-full border border-gray-200 text-primary hover:bg-gray-50 text-xs font-bold py-2.5 rounded transition-colors"
+            >
               CREATE ACCOUNT
-            </button>
+            </Link>
           </div>
         </div>
       </div>

@@ -1,3 +1,5 @@
+import { Link } from "react-router-dom";
+
 export default function Footer() {
   return (
     <footer className="bg-dark text-white">
@@ -35,39 +37,39 @@ export default function Footer() {
             </h4>
             <ul className="space-y-1.5 sm:space-y-2 text-gray-300 text-[11px] sm:text-xs">
               <li>
-                <a href="#" className="hover:text-primary">
+                <Link to="/" className="hover:text-primary">
                   Computer & Laptop
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#" className="hover:text-primary">
+                <Link to="/" className="hover:text-primary">
                   SmartPhone
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#" className="hover:text-primary">
+                <Link to="/" className="hover:text-primary">
                   Headphones
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#" className="hover:text-primary">
+                <Link to="/" className="hover:text-primary">
                   Accessories
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#" className="hover:text-primary">
+                <Link to="/" className="hover:text-primary">
                   Camera & Photo
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#" className="hover:text-primary">
+                <Link to="/" className="hover:text-primary">
                   TV & Homes
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#" className="text-primary font-semibold">
+                <Link to="/" className="text-primary font-semibold">
                   Browse All Product →
-                </a>
+                </Link>
               </li>
             </ul>
           </div>
@@ -79,39 +81,69 @@ export default function Footer() {
             </h4>
             <ul className="space-y-1.5 sm:space-y-2 text-gray-300 text-[11px] sm:text-xs">
               <li>
-                <a href="#" className="hover:text-primary">
+                <Link to="/" className="hover:text-primary">
                   Shop Product
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#" className="hover:text-primary">
+                <Link to="/cart" className="hover:text-primary">
                   Shopping Cart
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#" className="hover:text-primary">
+                <Link to="/wishlist" className="hover:text-primary">
                   Wishlist
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#" className="hover:text-primary">
+                <Link to="/customer" className="hover:text-primary">
                   Compare
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#" className="hover:text-primary">
+                <Link to="/customer" className="hover:text-primary">
                   Track Order
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#" className="hover:text-primary">
+                <Link to="/faqs" className="hover:text-primary">
                   Customer Help
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#" className="hover:text-primary">
+                <Link to="/about-us" className="hover:text-primary">
                   About Us
-                </a>
+                </Link>
+              </li>
+              <li>
+                <Link to="/signin" className="hover:text-primary">
+                  Sign In
+                </Link>
+              </li>
+              <li>
+                <Link to="/signup" className="hover:text-primary">
+                  Sign Up
+                </Link>
+              </li>
+              <li>
+                <Link to="/forgot-password" className="hover:text-primary">
+                  Forgot Password
+                </Link>
+              </li>
+              <li>
+                <Link to="/reset-password" className="hover:text-primary">
+                  Reset Password
+                </Link>
+              </li>
+              <li>
+                <Link to="/email-verification" className="hover:text-primary">
+                  Email Verification
+                </Link>
+              </li>
+              <li>
+                <Link to="/404" className="hover:text-primary">
+                  404 Demo
+                </Link>
               </li>
             </ul>
           </div>

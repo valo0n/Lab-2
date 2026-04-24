@@ -1,4 +1,5 @@
 import { FiX, FiShoppingCart } from 'react-icons/fi';
+import { Link } from 'react-router-dom';
 
 const wishlistItems = [
   { id: 1, name: 'Canon EOS 1500D DSLR Camera Body+ 18-55 mm', price: 1500, image: '📷' },
@@ -45,9 +46,13 @@ export default function WishlistPopup({ isOpen, onClose }) {
             <FiShoppingCart size={14} />
             ADD ALL TO CART
           </button>
-          <button className="w-full border border-gray-200 text-primary hover:bg-gray-50 text-xs font-bold py-2.5 rounded transition-colors">
+          <Link
+            to="/wishlist"
+            onClick={onClose}
+            className="block w-full border border-gray-200 text-primary hover:bg-gray-50 text-xs font-bold py-2.5 rounded transition-colors"
+          >
             VIEW WISHLIST
-          </button>
+          </Link>
         </div>
       </div>
     </>
