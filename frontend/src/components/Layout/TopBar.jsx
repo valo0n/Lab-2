@@ -1,3 +1,5 @@
+import { Link } from "react-router-dom";
+
 export default function TopBar() {
   return (
     <div className="bg-dark text-white text-xs sm:text-sm">
@@ -9,26 +11,29 @@ export default function TopBar() {
           <span className="hidden lg:inline text-gray-300 text-xs truncate">
             Up to 59% OFF — Limited time offer on all products
           </span>
-          <button className="bg-primary hover:bg-primary-600 text-white font-semibold px-2 sm:px-3 py-1 text-[10px] sm:text-xs rounded whitespace-nowrap">
+          <Link
+            to="/"
+            className="bg-primary hover:bg-primary-600 text-white font-semibold px-2 sm:px-3 py-1 text-[10px] sm:text-xs rounded whitespace-nowrap"
+          >
             SHOP NOW →
-          </button>
+          </Link>
         </div>
 
         <div className="hidden md:flex items-center gap-3 lg:gap-4 text-xs">
           <div className="hidden lg:flex items-center gap-2 text-gray-300">
             <span>Follow us:</span>
-            <a href="#" className="hover:text-primary">
+            <button type="button" className="hover:text-primary">
               f
-            </a>
-            <a href="#" className="hover:text-primary">
+            </button>
+            <button type="button" className="hover:text-primary">
               t
-            </a>
-            <a href="#" className="hover:text-primary">
+            </button>
+            <button type="button" className="hover:text-primary">
               in
-            </a>
-            <a href="#" className="hover:text-primary">
+            </button>
+            <button type="button" className="hover:text-primary">
               ig
-            </a>
+            </button>
           </div>
           <select className="bg-transparent text-gray-300 outline-none cursor-pointer">
             <option>Eng</option>

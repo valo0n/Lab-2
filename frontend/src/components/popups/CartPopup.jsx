@@ -1,4 +1,5 @@
 import { FiX } from 'react-icons/fi';
+import { Link } from 'react-router-dom';
 
 const cartItems = [
   { id: 1, name: 'Canon EOS 1500D DSLR Camera Body+ 18-55 mm', price: 1500, qty: 1, image: '📷' },
@@ -53,9 +54,13 @@ export default function CartPopup({ isOpen, onClose }) {
           <button className="w-full bg-primary hover:bg-primary-600 text-white text-xs font-bold py-2.5 rounded mb-2 transition-colors">
             CHECKOUT NOW →
           </button>
-          <button className="w-full border border-gray-200 text-primary hover:bg-gray-50 text-xs font-bold py-2.5 rounded transition-colors">
+          <Link
+            to="/cart"
+            onClick={onClose}
+            className="block w-full border border-gray-200 text-primary hover:bg-gray-50 text-xs font-bold py-2.5 rounded transition-colors text-center"
+          >
             VIEW CART
-          </button>
+          </Link>
         </div>
       </div>
     </>

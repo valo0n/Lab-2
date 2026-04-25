@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { FiMenu, FiPhone, FiX, FiChevronDown } from "react-icons/fi";
 import MegaMenu from "./MegaMenu";
 
@@ -27,24 +28,24 @@ export default function Navigation({ mobileOpen, onMobileClose }) {
           </div>
 
           <nav className="flex items-center gap-6 text-sm font-medium text-dark">
-            <a
-              href="#"
+            <Link
+              to="/"
               className="hover:text-primary transition-colors flex items-center gap-1"
             >
               🔥 Best Sellers
-            </a>
-            <a href="#" className="hover:text-primary transition-colors">
+            </Link>
+            <Link to="/" className="hover:text-primary transition-colors">
               Today's Deals
-            </a>
-            <a href="#" className="hover:text-primary transition-colors">
+            </Link>
+            <Link to="/" className="hover:text-primary transition-colors">
               New Arrivals
-            </a>
-            <a href="#" className="hover:text-primary transition-colors">
+            </Link>
+            <Link to="/customer" className="hover:text-primary transition-colors">
               Customer Service
-            </a>
-            <a href="#" className="hover:text-primary transition-colors">
+            </Link>
+            <Link to="/faqs" className="hover:text-primary transition-colors">
               Need Help
-            </a>
+            </Link>
           </nav>
 
           <div className="ml-auto flex items-center gap-2 text-sm font-semibold text-dark">
@@ -82,52 +83,60 @@ export default function Navigation({ mobileOpen, onMobileClose }) {
             Categories
           </div>
           {[
-            "🔥 Best Sellers",
-            "Today's Deals",
-            "New Arrivals",
-            "Customer Service",
-            "Need Help",
-          ].map((label) => (
-            <a
-              key={label}
-              href="#"
+            { label: "🔥 Best Sellers", to: "/" },
+            { label: "Today's Deals", to: "/" },
+            { label: "New Arrivals", to: "/" },
+            { label: "Customer Service", to: "/customer" },
+            { label: "Need Help", to: "/faqs" },
+          ].map((item) => (
+            <Link
+              key={item.label}
+              to={item.to}
+              onClick={onMobileClose}
               className="block py-3 text-dark hover:text-primary border-b border-gray-100"
             >
-              {label}
-            </a>
+              {item.label}
+            </Link>
           ))}
 
           <div className="text-xs uppercase text-dark-300 font-semibold mb-2 mt-6">
             Shop by Category
           </div>
           {[
-            "💻 Computer & Laptop",
-            "📱 SmartPhone",
-            "🎧 Headphones",
-            "⌨️ Accessories",
-            "📷 Camera & Photo",
-            "📺 TV & Homes",
-          ].map((label) => (
-            <a
-              key={label}
-              href="#"
+            { label: "💻 Computer & Laptop", to: "/" },
+            { label: "📱 SmartPhone", to: "/" },
+            { label: "🎧 Headphones", to: "/" },
+            { label: "⌨️ Accessories", to: "/" },
+            { label: "📷 Camera & Photo", to: "/" },
+            { label: "📺 TV & Homes", to: "/" },
+          ].map((item) => (
+            <Link
+              key={item.label}
+              to={item.to}
+              onClick={onMobileClose}
               className="block py-3 text-dark hover:text-primary border-b border-gray-100"
             >
-              {label}
-            </a>
+              {item.label}
+            </Link>
           ))}
 
           <div className="text-xs uppercase text-dark-300 font-semibold mb-2 mt-6">
             Account
           </div>
-          {["Login / Register", "Wishlist", "My Orders"].map((label) => (
-            <a
-              key={label}
-              href="#"
+          {[
+            { label: "Sign In", to: "/signin" },
+            { label: "Sign Up", to: "/signup" },
+            { label: "Wishlist", to: "/wishlist" },
+            { label: "My Orders", to: "/customer" },
+          ].map((item) => (
+            <Link
+              key={item.label}
+              to={item.to}
+              onClick={onMobileClose}
               className="block py-3 text-dark hover:text-primary border-b border-gray-100"
             >
-              {label}
-            </a>
+              {item.label}
+            </Link>
           ))}
 
           <div className="mt-6 p-3 bg-primary-50 rounded flex items-center gap-2 text-sm text-dark">
