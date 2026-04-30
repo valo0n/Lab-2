@@ -13,6 +13,12 @@ import EmailVerificationPage from "./pages/EmailVerificationPage";
 import AboutUsPage from "./pages/AboutUsPage";
 import NotFoundPage from "./pages/NotFoundPage";
 import DashboardPage from "./pages/DashboardPage";
+import SuccessPage from "./pages/SuccessPage";
+import TrackOrderDetails from "./pages/TrackOrderDetails";
+import TrackOrderPage from "./pages/TrackOrderPage";
+import ShopPage from "./pages/ShopPage";
+import ProductDetailsPage from "./pages/ProductDetailsPage";
+import ComparePage from "./pages/ComparePage";
 
 function App() {
   return (
@@ -20,7 +26,14 @@ function App() {
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/cart" element={<ShoppingCartPage />} />
+        <Route path="/checkout" element={<CheckoutPage />} />
         <Route path="/wishlist" element={<WishlistPage />} />
+        <Route path="/compare" element={<ComparePage />} />
+        <Route path="/shop-page" element={<ShopPage />} />
+        <Route path="/product-details" element={<ProductDetailsPage />} />
+        <Route path="/success" element={<SuccessPage />} />
+        <Route path="/track-order" element={<TrackOrderPage />} />
+        <Route path="/track-order-details" element={<TrackOrderDetails />} />
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/signin" element={<SignInPage />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
