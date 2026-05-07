@@ -29,10 +29,10 @@ export default function Navigation({ mobileOpen, onMobileClose }) {
 
           <nav className="flex items-center gap-6 text-sm font-medium text-dark">
             <Link
-              to="/"
+              to="/shop-page"
               className="hover:text-primary transition-colors flex items-center gap-1"
             >
-              🔥 Best Sellers
+              🔥 Shop
             </Link>
             <Link to="/" className="hover:text-primary transition-colors">
               Today's Deals
@@ -40,7 +40,10 @@ export default function Navigation({ mobileOpen, onMobileClose }) {
             <Link to="/" className="hover:text-primary transition-colors">
               New Arrivals
             </Link>
-            <Link to="/customer" className="hover:text-primary transition-colors">
+            <Link
+              to="/customer"
+              className="hover:text-primary transition-colors"
+            >
               Customer Service
             </Link>
             <Link to="/faqs" className="hover:text-primary transition-colors">
