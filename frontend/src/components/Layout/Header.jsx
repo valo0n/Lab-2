@@ -10,6 +10,7 @@ import WishlistPopup from "../popups/WishlistPopup";
 import AccountPopup from "../popups/AccountPopup";
 import { Link } from "react-router-dom";
 import { useCart } from "../../context/CartContext";
+import { useWishlist } from "../../context/WishlistContext";
 
 export default function Header({
   onMenuClick,
@@ -21,7 +22,7 @@ export default function Header({
   onAccountToggle,
 }) {
   const { cartCount } = useCart(); // ← KËTU, para return
-
+  const { wishlistCount } = useWishlist();
   return (
     <div className="bg-accent-blue text-white">
       <div className="max-w-7xl mx-auto px-3 sm:px-4 h-16 sm:h-20 flex items-center gap-3 sm:gap-6">
@@ -100,9 +101,11 @@ export default function Header({
               aria-label="Wishlist"
             >
               <FiHeart size={22} />
-              <span className="absolute -top-2 -right-2 w-4 h-4 bg-primary text-[10px] rounded-full flex items-center justify-center font-bold">
-                3
-              </span>
+              {wishlistCount > 0 && (
+                <span className="absolute -top-2 -right-2 w-4 h-4 bg-primary text-[10px] rounded-full flex items-center justify-center font-bold">
+                  {wishlistCount}
+                </span>
+              )}
             </button>
             <WishlistPopup isOpen={wishlistOpen} onClose={onWishlistToggle} />
           </div>

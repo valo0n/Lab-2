@@ -1,8 +1,9 @@
 import { FiHeart, FiEye, FiShoppingCart } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 import { useCart } from "../../context/CartContext";
-
+import { useWishlist } from "../../context/WishlistContext";
 export default function ProductCard({ product, onQuickView }) {
+  const { addToWishlist, isInWishlist } = useWishlist();
   const navigate = useNavigate();
   const { addToCart } = useCart();
   const {
@@ -30,7 +31,7 @@ export default function ProductCard({ product, onQuickView }) {
   };
 
   const handleWishlist = () => {
-    // Më vonë lidhet me backend
+    addToWishlist(product);
   };
 
   return (
@@ -52,7 +53,11 @@ export default function ProductCard({ product, onQuickView }) {
       <div className="absolute top-2 right-2 sm:top-3 sm:right-3 flex flex-col gap-1.5 sm:gap-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity z-10">
         <button
           onClick={handleWishlist}
-          className="w-7 h-7 sm:w-8 sm:h-8 bg-white border border-gray-100 rounded-full flex items-center justify-center hover:bg-primary hover:text-white hover:border-primary transition-colors"
+          className={`w-7 h-7 sm:w-8 sm:h-8 border border-gray-100 rounded-full flex items-center justify-center hover:bg-primary hover:text-white hover:border-primary transition-colors ${
+            isInWishlist(name)
+              ? "bg-primary text-white border-primary"
+              : "bg-white"
+          }`}
           aria-label="Add to wishlist"
         >
           <FiHeart size={12} className="sm:w-[14px] sm:h-[14px]" />
