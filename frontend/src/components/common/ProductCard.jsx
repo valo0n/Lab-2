@@ -1,8 +1,10 @@
 import { FiHeart, FiEye, FiShoppingCart } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
+import { useCart } from "../../context/CartContext";
 
 export default function ProductCard({ product, onQuickView }) {
   const navigate = useNavigate();
+  const { addToCart } = useCart();
   const {
     name,
     price,
@@ -16,8 +18,7 @@ export default function ProductCard({ product, onQuickView }) {
   } = product;
 
   const handleAddToCart = () => {
-    alert(`"${name}" u shtua në kartë!`);
-    // Më vonë kur lidhet me backend: axios.post('/api/cart/items', { product_id: product.id })
+    addToCart(product);
   };
 
   const handleQuickView = () => {
@@ -29,8 +30,7 @@ export default function ProductCard({ product, onQuickView }) {
   };
 
   const handleWishlist = () => {
-    alert(`"${name}" u shtua në wishlist!`);
-    // Më vonë: axios.post('/api/wishlist', { product_id: product.id })
+    // Më vonë lidhet me backend
   };
 
   return (

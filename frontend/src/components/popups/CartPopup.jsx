@@ -1,34 +1,11 @@
-import { useState } from "react";
 import { FiX } from "react-icons/fi";
 import { Link } from "react-router-dom";
-
-const initialItems = [
-  {
-    id: 1,
-    name: "Canon EOS 1500D DSLR Camera Body+ 18-55 mm",
-    price: 1500,
-    qty: 1,
-    image: "📷",
-  },
-  {
-    id: 2,
-    name: "Simple Mobile 5G LTE Galexy 12 Mini 512GB Gaming Phone",
-    price: 269,
-    qty: 2,
-    image: "📱",
-  },
-];
+import { useCart } from "../../context/CartContext";
 
 export default function CartPopup({ isOpen, onClose }) {
-  const [items, setItems] = useState(initialItems);
+  const { cartItems, removeFromCart, cartTotal, cartCount } = useCart();
 
   if (!isOpen) return null;
-
-  const removeItem = (id) => {
-    setItems(items.filter((item) => item.id !== id));
-  };
-
-  const subtotal = items.reduce((s, i) => s + i.price * i.qty, 0);
 
   return (
     <>
@@ -39,20 +16,20 @@ export default function CartPopup({ isOpen, onClose }) {
           <h3 className="text-sm font-semibold text-dark">
             Shopping Cart{" "}
             <span className="text-dark-300 font-normal">
-              ({String(items.length).padStart(2, "0")})
+              ({String(cartCount).padStart(2, "0")})
             </span>
           </h3>
         </div>
 
         <div className="max-h-[280px] overflow-y-auto">
-          {items.length === 0 ? (
+          {cartItems.length === 0 ? (
             <div className="px-4 py-8 text-center text-sm text-dark-300">
               Karta është bosh
             </div>
           ) : (
-            items.map((item) => (
+            cartItems.map((item, index) => (
               <div
-                key={item.id}
+                key={index}
                 className="flex items-start gap-3 px-4 py-3 border-b border-gray-100 last:border-0"
               >
                 <div className="w-12 h-12 bg-gray-50 rounded flex items-center justify-center text-2xl flex-shrink-0">
@@ -70,7 +47,7 @@ export default function CartPopup({ isOpen, onClose }) {
                   </p>
                 </div>
                 <button
-                  onClick={() => removeItem(item.id)}
+                  onClick={() => removeFromCart(item.name)}
                   aria-label="Remove"
                   className="text-dark-300 hover:text-danger flex-shrink-0"
                 >
@@ -85,7 +62,7 @@ export default function CartPopup({ isOpen, onClose }) {
           <div className="flex items-center justify-between mb-3">
             <span className="text-xs text-dark-300">Sub-Total:</span>
             <span className="text-sm font-bold text-dark">
-              ${subtotal.toFixed(2)} USD
+              ${cartTotal.toFixed(2)} USD
             </span>
           </div>
           <Link
