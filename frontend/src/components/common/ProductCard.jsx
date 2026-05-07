@@ -1,6 +1,8 @@
 import { FiHeart, FiEye, FiShoppingCart } from "react-icons/fi";
+import { useNavigate } from "react-router-dom";
 
-export default function ProductCard({ product }) {
+export default function ProductCard({ product, onQuickView }) {
+  const navigate = useNavigate();
   const {
     name,
     price,
@@ -12,6 +14,24 @@ export default function ProductCard({ product }) {
     badge,
     badgeColor = "primary",
   } = product;
+
+  const handleAddToCart = () => {
+    alert(`"${name}" u shtua në kartë!`);
+    // Më vonë kur lidhet me backend: axios.post('/api/cart/items', { product_id: product.id })
+  };
+
+  const handleQuickView = () => {
+    if (onQuickView) {
+      onQuickView(product);
+    } else {
+      navigate("/product-details");
+    }
+  };
+
+  const handleWishlist = () => {
+    alert(`"${name}" u shtua në wishlist!`);
+    // Më vonë: axios.post('/api/wishlist', { product_id: product.id })
+  };
 
   return (
     <div className="group relative bg-white border border-gray-100 rounded-lg p-3 sm:p-4 hover:shadow-card-hover transition-all">
@@ -29,15 +49,16 @@ export default function ProductCard({ product }) {
         </span>
       )}
 
-      {/* Quick action buttons — always visible on mobile, hover on desktop */}
       <div className="absolute top-2 right-2 sm:top-3 sm:right-3 flex flex-col gap-1.5 sm:gap-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity z-10">
         <button
+          onClick={handleWishlist}
           className="w-7 h-7 sm:w-8 sm:h-8 bg-white border border-gray-100 rounded-full flex items-center justify-center hover:bg-primary hover:text-white hover:border-primary transition-colors"
           aria-label="Add to wishlist"
         >
           <FiHeart size={12} className="sm:w-[14px] sm:h-[14px]" />
         </button>
         <button
+          onClick={handleQuickView}
           className="w-7 h-7 sm:w-8 sm:h-8 bg-white border border-gray-100 rounded-full flex items-center justify-center hover:bg-primary hover:text-white hover:border-primary transition-colors"
           aria-label="Quick view"
         >
@@ -45,12 +66,13 @@ export default function ProductCard({ product }) {
         </button>
       </div>
 
-      {/* Image */}
-      <div className="aspect-square bg-gray-50 rounded-lg flex items-center justify-center mb-2 sm:mb-3 overflow-hidden">
+      <div
+        onClick={handleQuickView}
+        className="aspect-square bg-gray-50 rounded-lg flex items-center justify-center mb-2 sm:mb-3 overflow-hidden cursor-pointer"
+      >
         <span className="text-3xl sm:text-5xl">{image}</span>
       </div>
 
-      {/* Rating */}
       <div className="flex items-center gap-1 mb-1 sm:mb-1.5">
         <div className="flex text-warning text-[10px] sm:text-xs">
           {"★★★★★".split("").map((s, i) => (
@@ -69,12 +91,13 @@ export default function ProductCard({ product }) {
         </span>
       </div>
 
-      {/* Name */}
-      <h3 className="text-xs sm:text-sm font-medium text-dark mb-1 sm:mb-2 line-clamp-2 min-h-[32px] sm:min-h-[40px]">
+      <h3
+        onClick={handleQuickView}
+        className="text-xs sm:text-sm font-medium text-dark mb-1 sm:mb-2 line-clamp-2 min-h-[32px] sm:min-h-[40px] cursor-pointer hover:text-primary"
+      >
         {name}
       </h3>
 
-      {/* Price */}
       <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
         <span className="text-primary font-bold text-sm sm:text-base">
           ${price}
@@ -91,8 +114,10 @@ export default function ProductCard({ product }) {
         )}
       </div>
 
-      {/* Add to cart — always visible on mobile, hover on desktop */}
-      <button className="w-full mt-2 sm:mt-3 bg-primary-50 text-primary text-[10px] sm:text-xs font-bold py-1.5 sm:py-2 rounded opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity hover:bg-primary hover:text-white flex items-center justify-center gap-1 sm:gap-2">
+      <button
+        onClick={handleAddToCart}
+        className="w-full mt-2 sm:mt-3 bg-primary-50 text-primary text-[10px] sm:text-xs font-bold py-1.5 sm:py-2 rounded opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity hover:bg-primary hover:text-white flex items-center justify-center gap-1 sm:gap-2"
+      >
         <FiShoppingCart size={12} className="sm:w-[14px] sm:h-[14px]" />
         <span className="hidden sm:inline">ADD TO CART</span>
         <span className="sm:hidden">ADD</span>
