@@ -1,13 +1,13 @@
 import { useState } from "react";
 import { Heart, ShoppingCart, Trash2, X, ArrowRight, Home } from "lucide-react";
-import TopBar from "../components/layout/TopBar";
-import Header from "../components/layout/Header";
-import Navigation from "../components/layout/Navigation";
-import Footer from "../components/layout/Footer";
-import ProductQuickView from "../components/products/ProductQuickView";
+import TopBar from "../../components/layout/TopBar";
+import Header from "../../components/layout/Header";
+import Navigation from "../../components/layout/Navigation";
+import Footer from "../../components/layout/Footer";
+import ProductQuickView from "../../components/products/ProductQuickView";
 import { Link } from "react-router-dom";
-import { useWishlist } from "../context/WishlistContext";
-import { useCart } from "../context/CartContext";
+import { useWishlist } from "../../context/WishlistContext";
+import { useCart } from "../../context/CartContext";
 
 export default function WishlistPage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);

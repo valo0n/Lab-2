@@ -1,8 +1,8 @@
 import { useState } from "react";
-import TopBar from "../components/layout/TopBar";
-import Header from "../components/layout/Header";
-import Navigation from "../components/layout/Navigation";
-import Footer from "../components/layout/Footer";
+import TopBar from "../../components/layout/TopBar";
+import Header from "../../components/layout/Header";
+import Navigation from "../../components/layout/Navigation";
+import Footer from "../../components/layout/Footer";
 
 const productImages = [
     "https://images.unsplash.com/photo-1583394838336-acd977736f90?auto=format&fit=crop&w=400&q=80",

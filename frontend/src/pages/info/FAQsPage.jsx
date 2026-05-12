@@ -1,4 +1,4 @@
-import SiteLayout from "../components/common/SiteLayout";
+import SiteLayout from "../../components/common/SiteLayout";
 
 const faqItems = [
   {

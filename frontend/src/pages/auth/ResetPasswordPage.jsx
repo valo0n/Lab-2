@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import SiteLayout from "../components/common/SiteLayout";
+import SiteLayout from "../../components/common/SiteLayout";
 
 export default function ResetPasswordPage() {
   return (

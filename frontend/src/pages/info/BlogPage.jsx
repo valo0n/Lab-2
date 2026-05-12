@@ -1,5 +1,5 @@
-import BlogCard from "../components/blog/BlogCard"
-import Sidebar from "../components/blog/Sidebar"
+import BlogCard from "../../components/blog/BlogCard"
+import Sidebar from "../../components/blog/Sidebar"
 
 function BlogPage() {
 

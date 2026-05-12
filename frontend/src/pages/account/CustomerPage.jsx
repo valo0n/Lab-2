@@ -1,4 +1,4 @@
-import SiteLayout from "../components/common/SiteLayout";
+import SiteLayout from "../../components/common/SiteLayout";
 
 const recentOrders = [
   { id: "#CL-3021", date: "Apr 18, 2026", total: "$489.00", status: "Delivered" },

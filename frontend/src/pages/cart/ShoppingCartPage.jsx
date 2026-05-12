@@ -1,8 +1,8 @@
 import { useMemo, useState } from "react";
-import TopBar from "../components/layout/TopBar";
-import Header from "../components/layout/Header";
-import Navigation from "../components/layout/Navigation";
-import Footer from "../components/layout/Footer";
+import TopBar from "../../components/layout/TopBar";
+import Header from "../../components/layout/Header";
+import Navigation from "../../components/layout/Navigation";
+import Footer from "../../components/layout/Footer";
 
 const initialCartItems = [
   {

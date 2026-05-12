@@ -1,20 +1,20 @@
 import { useState } from "react";
-import TopBar from "../components/layout/TopBar";
-import Header from "../components/layout/Header";
-import Navigation from "../components/layout/Navigation";
-import Footer from "../components/layout/Footer";
-import HeroSection from "../components/homepage/HeroSection";
-import FeatureStrips from "../components/homepage/FeatureStrips";
-import BestDealsSection from "../components/homepage/BestDealsSection";
-import ShopWithCategories from "../components/homepage/ShopWithCategories";
-import FeaturedProducts from "../components/homepage/FeaturedProducts";
-import TwoSideBanners from "../components/homepage/TwoSideBanners";
-import ComputerAccessories from "../components/homepage/ComputerAccessories";
-import MacBookProBanner from "../components/homepage/MacBookProBanner";
-import FourColumnLists from "../components/homepage/FourColumnLists";
-import LatestNews from "../components/homepage/LatestNews";
-import NewsletterSection from "../components/homepage/NewsletterSection";
-import ProductQuickView from "../components/products/ProductQuickView";
+import TopBar from "../../components/layout/TopBar";
+import Header from "../../components/layout/Header";
+import Navigation from "../../components/layout/Navigation";
+import Footer from "../../components/layout/Footer";
+import HeroSection from "../../components/homepage/HeroSection";
+import FeatureStrips from "../../components/homepage/FeatureStrips";
+import BestDealsSection from "../../components/homepage/BestDealsSection";
+import ShopWithCategories from "../../components/homepage/ShopWithCategories";
+import FeaturedProducts from "../../components/homepage/FeaturedProducts";
+import TwoSideBanners from "../../components/homepage/TwoSideBanners";
+import ComputerAccessories from "../../components/homepage/ComputerAccessories";
+import MacBookProBanner from "../../components/homepage/MacBookProBanner";
+import FourColumnLists from "../../components/homepage/FourColumnLists";
+import LatestNews from "../../components/homepage/LatestNews";
+import NewsletterSection from "../../components/homepage/NewsletterSection";
+import ProductQuickView from "../../components/products/ProductQuickView";
 
 export default function HomePage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
