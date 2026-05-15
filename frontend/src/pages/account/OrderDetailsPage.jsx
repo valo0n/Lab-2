@@ -28,6 +28,7 @@ import TopBar from "../../components/Layout/TopBar";
 import Header from "../../components/Layout/Header";
 import Navigation from "../../components/Layout/Navigation";
 import Footer from "../../components/Layout/Footer";
+import RatingModal from "../../components/account/RatingModal";
 
 const sidebarItems = [
   { name: "Dashboard", icon: Layers, path: "/dashboard" },
@@ -105,7 +106,7 @@ export default function OrderDetailsPage() {
   const [cartOpen, setCartOpen] = useState(false);
   const [wishlistOpen, setWishlistOpen] = useState(false);
   const [accountOpen, setAccountOpen] = useState(false);
-
+  const [ratingOpen, setRatingOpen] = useState(false);
   const toggleCart = () => {
     setCartOpen((v) => !v);
     setWishlistOpen(false);
@@ -204,7 +205,10 @@ export default function OrderDetailsPage() {
                   ORDER DETAILS
                 </h3>
               </div>
-              <button className="text-primary text-xs font-bold uppercase tracking-wide hover:underline flex items-center gap-1">
+              <button
+                onClick={() => setRatingOpen(true)}
+                className="text-primary text-xs font-bold uppercase tracking-wide hover:underline flex items-center gap-1"
+              >
                 Leave a Rating <Plus size={12} />
               </button>
             </div>
@@ -418,7 +422,11 @@ export default function OrderDetailsPage() {
           </div>
         </div>
       </main>
-
+      <RatingModal
+        isOpen={ratingOpen}
+        onClose={() => setRatingOpen(false)}
+        orderId="96459761"
+      />
       <Footer />
     </div>
   );

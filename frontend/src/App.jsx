@@ -29,6 +29,9 @@ import TrackOrderPage from "./pages/account/TrackOrderPage";
 import TrackOrderDetails from "./pages/account/TrackOrderDetails";
 import OrderHistoryPage from "./pages/account/OrderHistoryPage";
 import OrderDetailsPage from "./pages/account/OrderDetailsPage";
+import CardsAddressPage from "./pages/account/CardsAddressPage";
+import BrowsingHistoryPage from "./pages/account/BrowsingHistoryPage";
+import SettingsPage from "./pages/account/SettingsPage";
 
 // Info
 import AboutUsPage from "./pages/info/AboutUsPage";
@@ -80,6 +83,9 @@ function App() {
             />
             <Route path="/order-history" element={<OrderHistoryPage />} />
             <Route path="/order-details" element={<OrderDetailsPage />} />
+            <Route path="/cards-address" element={<CardsAddressPage />} />
+            <Route path="/browsing-history" element={<BrowsingHistoryPage />} />
+            <Route path="/settings" element={<SettingsPage />} />
 
             {/* Info */}
             <Route path="/about-us" element={<AboutUsPage />} />
