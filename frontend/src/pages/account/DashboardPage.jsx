@@ -1,172 +1,513 @@
 import { useState } from "react";
-import TopBar from "../../components/layout/TopBar";
-import Header from "../../components/layout/Header";
-import Navigation from "../../components/layout/Navigation";
-import Footer from "../../components/layout/Footer";
+import { Link } from "react-router-dom";
+import {
+  Layers,
+  ShoppingBag,
+  MapPin,
+  ShoppingCart,
+  Heart,
+  RotateCw,
+  CreditCard,
+  Clock,
+  Settings,
+  LogOut,
+  Rocket,
+  Package,
+  FileText,
+  Home,
+  ChevronRight,
+  MoreHorizontal,
+  Edit2,
+  Trash2,
+} from "lucide-react";
+import TopBar from "../../components/Layout/TopBar";
+import Header from "../../components/Layout/Header";
+import Navigation from "../../components/Layout/Navigation";
+import Footer from "../../components/Layout/Footer";
+import { useCart } from "../../context/CartContext";
+import { useWishlist } from "../../context/WishlistContext";
+
+const sidebarItems = [
+  { name: "Dashboard", icon: Layers, path: "/dashboard" },
+  { name: "Order History", icon: ShoppingBag, path: "/order-history" },
+  { name: "Track Order", icon: MapPin, path: "/track-order" },
+  { name: "Shopping Cart", icon: ShoppingCart, path: "/cart" },
+  { name: "Wishlist", icon: Heart, path: "/wishlist" },
+  { name: "Compare", icon: RotateCw, path: "/compare" },
+  { name: "Cards & Address", icon: CreditCard, path: "/cards-address" },
+  { name: "Browsing History", icon: Clock, path: "/browsing-history" },
+  { name: "Setting", icon: Settings, path: "/settings" },
+  { name: "Log-out", icon: LogOut, path: "/signin" },
+];
+
+const recentOrders = [
+  {
+    id: "#96459761",
+    status: "IN PROGRESS",
+    date: "Dec 30, 2019 05:18",
+    total: "$1,500 (5 Products)",
+  },
+  {
+    id: "#71667167",
+    status: "COMPLETED",
+    date: "Feb 2, 2019 19:28",
+    total: "$80 (11 Products)",
+  },
+  {
+    id: "#95214362",
+    status: "CANCELED",
+    date: "Mar 20, 2019 23:14",
+    total: "$160 (3 Products)",
+  },
+  {
+    id: "#71667167",
+    status: "COMPLETED",
+    date: "Feb 2, 2019 19:28",
+    total: "$80 (1 Products)",
+  },
+  {
+    id: "#51746385",
+    status: "COMPLETED",
+    date: "Feb 2, 2019 19:28",
+    total: "$2,300 (2 Products)",
+  },
+  {
+    id: "#51746385",
+    status: "CANCELED",
+    date: "Dec 30, 2019 07:52",
+    total: "$70 (1 Products)",
+  },
+  {
+    id: "#673971743",
+    status: "COMPLETED",
+    date: "Dec 7, 2019 23:26",
+    total: "$220 (1 Products)",
+  },
+];
+
+const browsingHistory = [
+  {
+    name: "TOZO T6 True Wireless Earbuds Bluetooth Headphon...",
+    price: 70,
+    image: "🎧",
+    badge: "HOT",
+    badgeColor: "primary",
+    rating: 4.5,
+    reviews: 738,
+  },
+  {
+    name: "Samsung Electronics Samsung Galexy S21 5G",
+    price: 2300,
+    image: "📱",
+    rating: 5,
+    reviews: 536,
+  },
+  {
+    name: "Amazon Basics High-Speed HDMI Cable (18 Gbps, 4K/6...",
+    price: 360,
+    image: "❄️",
+    badge: "BEST DEALS",
+    badgeColor: "info",
+    rating: 5,
+    reviews: 423,
+  },
+  {
+    name: "Portable Wshing Machine, 11lbs capacity Model 18NMF...",
+    price: 80,
+    image: "🎧",
+    rating: 4,
+    reviews: 816,
+  },
+];
+
+function StatusBadge({ status }) {
+  const colors = {
+    "IN PROGRESS": "text-warning",
+    COMPLETED: "text-success",
+    CANCELED: "text-danger",
+  };
+  return (
+    <span
+      className={`text-xs font-semibold ${colors[status] || "text-gray-500"}`}
+    >
+      {status}
+    </span>
+  );
+}
 
 export default function DashboardPage() {
-  const [activeTab, setActiveTab] = useState("Dashboard");
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [cartOpen, setCartOpen] = useState(false);
+  const [wishlistOpen, setWishlistOpen] = useState(false);
+  const [accountOpen, setAccountOpen] = useState(false);
+  const [cardMenuOpen, setCardMenuOpen] = useState(null);
 
-  const sidebarItems = [
-    { name: "Dashboard", icon: "📊" },
-    { name: "Order History", icon: "📦" },
-    { name: "Track Order", icon: "📍" },
-    { name: "Shopping Cart", icon: "🛒" },
-    { name: "Wishlist", icon: "❤️" },
-    { name: "Compare", icon: "🔄" },
-    { name: "Cards & Address", icon: "💳" },
-    { name: "Browsing History", icon: "🕒" },
-    { name: "Setting", icon: "⚙️" },
-    { name: "Log-out", icon: "🚪" },
-  ];
-
-  const recentOrders = [
-    { id: "#96459761", status: "IN PROGRESS", date: "Dec 30, 2019", total: "$1,500 (5 Products)" },
-    { id: "#71667167", status: "COMPLETED", date: "Feb 2, 2019", total: "$80 (11 Products)" },
-    { id: "#95214362", status: "CANCELED", date: "Mar 20, 2019", total: "$160 (3 Products)" },
-  ];
+  const toggleCart = () => {
+    setCartOpen((v) => !v);
+    setWishlistOpen(false);
+    setAccountOpen(false);
+  };
+  const toggleWishlist = () => {
+    setWishlistOpen((v) => !v);
+    setCartOpen(false);
+    setAccountOpen(false);
+  };
+  const toggleAccount = () => {
+    setAccountOpen((v) => !v);
+    setCartOpen(false);
+    setWishlistOpen(false);
+  };
 
   return (
-    <div className="min-h-screen bg-gray-50 font-sans text-gray-800">
+    <div className="min-h-screen bg-white font-sans">
       <TopBar />
-      <Header />
-      <Navigation />
+      <Header
+        onMenuClick={() => setMobileMenuOpen(true)}
+        cartOpen={cartOpen}
+        onCartToggle={toggleCart}
+        wishlistOpen={wishlistOpen}
+        onWishlistToggle={toggleWishlist}
+        accountOpen={accountOpen}
+        onAccountToggle={toggleAccount}
+      />
+      <Navigation
+        mobileOpen={mobileMenuOpen}
+        onMobileClose={() => setMobileMenuOpen(false)}
+      />
 
-      <main className="max-w-7xl mx-auto py-10 px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-col md:flex-row gap-8">
-          
+      {/* Breadcrumb */}
+      <div className="bg-gray-50 border-b border-gray-100">
+        <div className="max-w-7xl mx-auto px-4 py-4 flex items-center gap-2 text-sm">
+          <Home size={14} className="text-dark-300" />
+          <Link to="/" className="text-dark-300 hover:text-primary">
+            Home
+          </Link>
+          <ChevronRight size={14} className="text-dark-300" />
+          <span className="text-dark-300">User Account</span>
+          <ChevronRight size={14} className="text-dark-300" />
+          <span className="text-info font-medium">Dashboard</span>
+        </div>
+      </div>
+
+      <main className="max-w-7xl mx-auto px-4 py-10">
+        <div className="grid grid-cols-1 lg:grid-cols-[260px_1fr] gap-6">
           {/* Sidebar */}
-          <aside className="w-full md:w-64 bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden h-fit">
-            <nav className="flex flex-col">
-              {sidebarItems.map((item) => (
-                <button
-                  key={item.name}
-                  onClick={() => setActiveTab(item.name)}
-                  className={`flex items-center px-6 py-3 text-sm font-medium transition-colors ${
-                    activeTab === item.name 
-                      ? "bg-orange-500 text-white" 
-                      : "text-gray-600 hover:bg-orange-50"
-                  }`}
-                >
-                  <span className="mr-3">{item.icon}</span>
-                  {item.name}
-                </button>
-              ))}
+          <aside className="bg-white rounded-lg border border-gray-100 overflow-hidden h-fit">
+            <nav className="flex flex-col py-2">
+              {sidebarItems.map((item) => {
+                const Icon = item.icon;
+                const isActive = item.name === "Dashboard";
+                return (
+                  <Link
+                    key={item.name}
+                    to={item.path}
+                    className={`flex items-center gap-3 px-6 py-3 text-sm font-medium transition-colors ${
+                      isActive
+                        ? "bg-primary text-white"
+                        : "text-dark hover:bg-gray-50"
+                    }`}
+                  >
+                    <Icon size={18} />
+                    {item.name}
+                  </Link>
+                );
+              })}
             </nav>
           </aside>
 
-          {/* Main Content */}
-          <section className="flex-1">
-            <header className="mb-6">
-              <h1 className="text-xl font-bold">Hello, Kevin</h1>
-              <p className="text-gray-500 text-sm">
-                From your account dashboard you can easily check & view your recent orders, 
-                manage your shipping and billing addresses and edit your password.
-              </p>
-            </header>
+          {/* Main content */}
+          <div>
+            {/* Greeting */}
+            <h1 className="text-2xl font-bold text-dark mb-2">Hello, Kevin</h1>
+            <p className="text-sm text-dark-300 mb-6 leading-relaxed">
+              From your account dashboard. you can easily check & view your{" "}
+              <span className="text-info">Recent Orders</span>, manage your{" "}
+              <span className="text-info">Shipping and Billing Addresses</span>{" "}
+              and edit your <span className="text-info">Password</span> and{" "}
+              <span className="text-info">Account Details.</span>
+            </p>
 
-            {/* Account Info Cards */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-8">
-              {/* Profile */}
-              <div className="p-5 bg-white border border-gray-200 rounded-lg flex flex-col items-center text-center">
-                <div className="w-16 h-16 bg-gray-200 rounded-full mb-3 overflow-hidden">
-                   <img src="https://via.placeholder.com/150" alt="Avatar" />
+            {/* Account Info, Billing, Stats */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+              {/* Account Info */}
+              <div className="bg-white border border-gray-100 rounded-lg overflow-hidden">
+                <div className="px-5 py-3 border-b border-gray-100">
+                  <h3 className="text-xs font-bold text-dark-300 tracking-wider">
+                    ACCOUNT INFO
+                  </h3>
                 </div>
-                <h3 className="font-bold">Kevin Gilbert</h3>
-                <p className="text-xs text-gray-500">Dhaka - 1207, Bangladesh</p>
-                <button className="mt-4 text-sm text-blue-600 font-semibold uppercase">Edit Account</button>
+                <div className="p-5">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-12 h-12 bg-primary-50 rounded-full flex items-center justify-center text-primary font-bold">
+                      KG
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-dark">Kevin Gilbert</h4>
+                      <p className="text-xs text-dark-300">
+                        Dhaka -1207, Bangladesh
+                      </p>
+                    </div>
+                  </div>
+                  <div className="space-y-2 text-xs">
+                    <p>
+                      <span className="text-dark-300">Email:</span>{" "}
+                      <span className="text-dark">kevin.gilbert@gmail.com</span>
+                    </p>
+                    <p>
+                      <span className="text-dark-300">Sec Email:</span>{" "}
+                      <span className="text-dark">kevin12345@gmail.com</span>
+                    </p>
+                    <p>
+                      <span className="text-dark-300">Phone:</span>{" "}
+                      <span className="text-dark">+1-202-555-0118</span>
+                    </p>
+                  </div>
+                  <button className="mt-4 text-info text-xs font-bold uppercase tracking-wide hover:underline">
+                    EDIT ACCOUNT
+                  </button>
+                </div>
               </div>
 
               {/* Billing Address */}
-              <div className="p-5 bg-white border border-gray-200 rounded-lg">
-                <h3 className="text-xs font-bold uppercase text-gray-400 mb-2">Billing Address</h3>
-                <p className="text-sm font-bold">Kevin Gilbert</p>
-                <p className="text-sm text-gray-500 leading-relaxed">
-                  East Tejturi Bazar, Word No. 04, Road No. 13/x, Dhaka - 1200
-                </p>
-                <button className="mt-4 text-sm text-blue-600 font-semibold uppercase">Edit Address</button>
+              <div className="bg-white border border-gray-100 rounded-lg overflow-hidden">
+                <div className="px-5 py-3 border-b border-gray-100">
+                  <h3 className="text-xs font-bold text-dark-300 tracking-wider">
+                    BILLING ADDRESS
+                  </h3>
+                </div>
+                <div className="p-5">
+                  <h4 className="font-bold text-dark mb-2">Kevin Gilbert</h4>
+                  <p className="text-xs text-dark-300 mb-4 leading-relaxed">
+                    East Tejturi Bazar, Word No. 04, Road No.
+                    <br />
+                    13/x, House no. 1320/C, Flat No. 5D,
+                    <br />
+                    Dhaka -1200, Bangladesh
+                  </p>
+                  <div className="space-y-2 text-xs mb-4">
+                    <p>
+                      <span className="text-dark-300">Phone Number:</span>{" "}
+                      <span className="text-dark">+1-202-555-0118</span>
+                    </p>
+                    <p>
+                      <span className="text-dark-300">Email:</span>{" "}
+                      <span className="text-dark">kevin.gilbert@gmail.com</span>
+                    </p>
+                  </div>
+                  <button className="text-info text-xs font-bold uppercase tracking-wide hover:underline">
+                    EDIT ADDRESS
+                  </button>
+                </div>
               </div>
 
               {/* Stats */}
-              <div className="grid grid-rows-3 gap-2">
-                <div className="bg-blue-50 p-3 rounded flex items-center justify-between">
-                   <span className="text-sm font-medium">Total Orders</span>
-                   <span className="font-bold">154</span>
-                </div>
-                <div className="bg-orange-50 p-3 rounded flex items-center justify-between">
-                   <span className="text-sm font-medium">Pending Orders</span>
-                   <span className="font-bold">05</span>
-                </div>
-                <div className="bg-green-50 p-3 rounded flex items-center justify-between">
-                   <span className="text-sm font-medium">Completed Orders</span>
-                   <span className="font-bold">149</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Payment Options (Cards) */}
-            <div className="mb-8">
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="font-bold">Payment Option</h2>
-                <button className="text-sm text-blue-600 font-medium">Add Card +</button>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="bg-slate-800 text-white p-6 rounded-xl relative overflow-hidden">
-                  <p className="text-xs opacity-70 mb-1">CARD NUMBER</p>
-                  <p className="tracking-widest font-mono">**** **** **** 3814</p>
-                  <div className="mt-6 flex justify-between items-end">
-                    <span className="font-bold italic">VISA</span>
-                    <span className="text-sm">Kevin Gilbert</span>
+              <div className="space-y-3">
+                <div className="bg-blue-50 rounded-lg p-4 flex items-center gap-4">
+                  <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center text-info">
+                    <Rocket size={20} />
+                  </div>
+                  <div>
+                    <div className="text-2xl font-bold text-dark">154</div>
+                    <p className="text-xs text-dark-300">Total Orders</p>
                   </div>
                 </div>
-                <div className="bg-green-700 text-white p-6 rounded-xl">
-                  <p className="text-xs opacity-70 mb-1">CARD NUMBER</p>
-                  <p className="tracking-widest font-mono">**** **** **** 1761</p>
-                  <div className="mt-6 flex justify-between items-end">
-                    <span className="font-bold italic">MasterCard</span>
-                    <span className="text-sm">Kevin Gilbert</span>
+                <div className="bg-orange-50 rounded-lg p-4 flex items-center gap-4">
+                  <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center text-primary">
+                    <FileText size={20} />
+                  </div>
+                  <div>
+                    <div className="text-2xl font-bold text-dark">05</div>
+                    <p className="text-xs text-dark-300">Pending Orders</p>
+                  </div>
+                </div>
+                <div className="bg-green-50 rounded-lg p-4 flex items-center gap-4">
+                  <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center text-success">
+                    <Package size={20} />
+                  </div>
+                  <div>
+                    <div className="text-2xl font-bold text-dark">149</div>
+                    <p className="text-xs text-dark-300">Completed Orders</p>
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Recent Orders Table */}
-            <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
-              <div className="p-4 border-b border-gray-100 flex justify-between">
-                <h2 className="font-bold">Recent Order</h2>
-                <button className="text-sm text-orange-500 font-medium">View All →</button>
+            {/* Payment Option */}
+            <div className="bg-white border border-gray-100 rounded-lg mb-6">
+              <div className="px-5 py-3 border-b border-gray-100 flex items-center justify-between">
+                <h3 className="text-xs font-bold text-dark-300 tracking-wider">
+                  PAYMENT OPTION
+                </h3>
+                <button className="text-primary text-xs font-bold uppercase tracking-wide hover:underline flex items-center gap-1">
+                  Add Card →
+                </button>
               </div>
-              <table className="w-full text-left text-sm">
-                <thead className="bg-gray-50 text-gray-400 uppercase text-[10px] font-bold">
-                  <tr>
-                    <th className="px-6 py-3">Order ID</th>
-                    <th className="px-6 py-3">Status</th>
-                    <th className="px-6 py-3">Date</th>
-                    <th className="px-6 py-3">Total</th>
-                    <th className="px-6 py-3 text-right">Action</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100">
-                  {recentOrders.map((order) => (
-                    <tr key={order.id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 font-medium">{order.id}</td>
-                      <td className={`px-6 py-4 font-bold text-xs ${
-                        order.status === 'COMPLETED' ? 'text-green-500' : 
-                        order.status === 'CANCELED' ? 'text-red-500' : 'text-orange-500'
-                      }`}>
-                        {order.status}
-                      </td>
-                      <td className="px-6 py-4 text-gray-500">{order.date}</td>
-                      <td className="px-6 py-4 text-gray-500">{order.total}</td>
-                      <td className="px-6 py-4 text-right">
-                        <button className="text-blue-600 font-bold">View Details →</button>
-                      </td>
+              <div className="p-5 grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Visa Card */}
+                <div className="bg-gradient-to-br from-blue-700 to-blue-900 rounded-lg p-5 text-white relative">
+                  <div className="flex items-start justify-between mb-6">
+                    <div>
+                      <p className="text-xl font-bold">$95, 400.00 USD</p>
+                    </div>
+                    <div className="relative">
+                      <button
+                        onClick={() =>
+                          setCardMenuOpen(cardMenuOpen === 1 ? null : 1)
+                        }
+                      >
+                        <MoreHorizontal size={20} />
+                      </button>
+                      {cardMenuOpen === 1 && (
+                        <div className="absolute right-0 top-6 bg-white text-dark rounded shadow-lg w-32 z-10">
+                          <button className="flex items-center gap-2 w-full px-3 py-2 text-xs hover:bg-gray-50 text-left">
+                            <Edit2 size={12} /> Edit Card
+                          </button>
+                          <button className="flex items-center gap-2 w-full px-3 py-2 text-xs hover:bg-gray-50 text-left text-danger">
+                            <Trash2 size={12} /> Delete Card
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  <p className="text-xs text-blue-200 mb-1">CARD NUMBER</p>
+                  <p className="font-mono text-sm mb-6">**** **** **** 3814</p>
+                  <div className="flex items-end justify-between">
+                    <span className="font-bold italic text-lg">VISA</span>
+                    <span className="text-sm">Kevin Gilbert</span>
+                  </div>
+                </div>
+
+                {/* Mastercard */}
+                <div className="bg-gradient-to-br from-green-500 to-green-700 rounded-lg p-5 text-white relative">
+                  <div className="flex items-start justify-between mb-6">
+                    <div>
+                      <p className="text-xl font-bold">$87, 583.00 USD</p>
+                    </div>
+                    <button
+                      onClick={() =>
+                        setCardMenuOpen(cardMenuOpen === 2 ? null : 2)
+                      }
+                    >
+                      <MoreHorizontal size={20} />
+                    </button>
+                  </div>
+                  <p className="text-xs text-green-100 mb-1">CARD NUMBER</p>
+                  <p className="font-mono text-sm mb-6">**** **** **** 1761</p>
+                  <div className="flex items-end justify-between">
+                    <div className="flex gap-0">
+                      <div className="w-6 h-6 bg-red-500 rounded-full"></div>
+                      <div className="w-6 h-6 bg-orange-400 rounded-full -ml-2 opacity-90"></div>
+                    </div>
+                    <span className="text-sm">Kevin Gilbert</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Recent Orders */}
+            <div className="bg-white border border-gray-100 rounded-lg mb-6 overflow-hidden">
+              <div className="px-5 py-3 border-b border-gray-100 flex items-center justify-between">
+                <h3 className="text-xs font-bold text-dark-300 tracking-wider">
+                  RECENT ORDER
+                </h3>
+                <Link
+                  to="/order-history"
+                  className="text-primary text-xs font-bold uppercase tracking-wide hover:underline"
+                >
+                  View All →
+                </Link>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead className="bg-gray-50 text-xs uppercase tracking-wider text-dark-300">
+                    <tr>
+                      <th className="px-5 py-3 text-left">ORDER ID</th>
+                      <th className="px-5 py-3 text-left">STATUS</th>
+                      <th className="px-5 py-3 text-left">DATE</th>
+                      <th className="px-5 py-3 text-left">TOTAL</th>
+                      <th className="px-5 py-3 text-left">ACTION</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {recentOrders.map((order, i) => (
+                      <tr key={i} className="border-t border-gray-100">
+                        <td className="px-5 py-4 text-dark">{order.id}</td>
+                        <td className="px-5 py-4">
+                          <StatusBadge status={order.status} />
+                        </td>
+                        <td className="px-5 py-4 text-dark-300">
+                          {order.date}
+                        </td>
+                        <td className="px-5 py-4 text-dark">{order.total}</td>
+                        <td className="px-5 py-4">
+                          <Link
+                            to="/order-details"
+                            className="text-info text-xs font-medium hover:underline"
+                          >
+                            View Details →
+                          </Link>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
-          </section>
+
+            {/* Browsing History */}
+            <div className="bg-white border border-gray-100 rounded-lg overflow-hidden">
+              <div className="px-5 py-3 border-b border-gray-100 flex items-center justify-between">
+                <h3 className="text-xs font-bold text-dark-300 tracking-wider">
+                  BROWSING HISTORY
+                </h3>
+                <button className="text-primary text-xs font-bold uppercase tracking-wide hover:underline">
+                  View All →
+                </button>
+              </div>
+              <div className="p-5 grid grid-cols-2 md:grid-cols-4 gap-4">
+                {browsingHistory.map((item, i) => (
+                  <div
+                    key={i}
+                    className="border border-gray-100 rounded-lg p-3 relative"
+                  >
+                    {item.badge && (
+                      <span
+                        className={`absolute top-2 left-2 text-[9px] font-bold text-white px-2 py-0.5 rounded ${
+                          item.badgeColor === "info" ? "bg-info" : "bg-primary"
+                        }`}
+                      >
+                        {item.badge}
+                      </span>
+                    )}
+                    <div className="aspect-square bg-gray-50 rounded flex items-center justify-center text-5xl mb-3">
+                      {item.image}
+                    </div>
+                    <div className="flex text-warning text-xs mb-1">
+                      {"★★★★★".split("").map((s, j) => (
+                        <span
+                          key={j}
+                          className={
+                            j < Math.round(item.rating)
+                              ? "text-warning"
+                              : "text-gray-200"
+                          }
+                        >
+                          ★
+                        </span>
+                      ))}
+                      <span className="text-dark-300 ml-1">
+                        ({item.reviews})
+                      </span>
+                    </div>
+                    <h4 className="text-xs text-dark line-clamp-2 mb-2 min-h-[32px]">
+                      {item.name}
+                    </h4>
+                    <p className="text-info font-bold text-sm">${item.price}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
         </div>
       </main>
 
