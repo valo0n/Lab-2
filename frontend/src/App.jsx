@@ -27,6 +27,8 @@ import CustomerPage from "./pages/account/CustomerPage";
 import WishlistPage from "./pages/account/WishlistPage";
 import TrackOrderPage from "./pages/account/TrackOrderPage";
 import TrackOrderDetails from "./pages/account/TrackOrderDetails";
+import OrderHistoryPage from "./pages/account/OrderHistoryPage";
+import OrderDetailsPage from "./pages/account/OrderDetailsPage";
 
 // Info
 import AboutUsPage from "./pages/info/AboutUsPage";
@@ -76,6 +78,8 @@ function App() {
               path="/track-order-details"
               element={<TrackOrderDetails />}
             />
+            <Route path="/order-history" element={<OrderHistoryPage />} />
+            <Route path="/order-details" element={<OrderDetailsPage />} />
 
             {/* Info */}
             <Route path="/about-us" element={<AboutUsPage />} />
