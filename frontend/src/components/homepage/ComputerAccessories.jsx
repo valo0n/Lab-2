@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import ProductCard from "../common/ProductCard";
+import { productService } from "../../services/productService";
 
 const tabs = [
   "All Product",
@@ -9,83 +10,56 @@ const tabs = [
   "Printer",
 ];
 
-const products = [
-  {
-    name: "Logitech G733 Wireless Headset RGB",
-    price: 129,
-    image: "🎧",
-    rating: 4.6,
-    reviews: 234,
-  },
-  {
-    name: "Razer Mechanical Gaming Keyboard RGB",
-    price: 149,
-    image: "⌨️",
-    rating: 4.8,
-    reviews: 567,
-  },
-  {
-    name: "Red Mechanical Gaming Keyboard",
-    price: 89,
-    image: "⌨️",
-    rating: 4.5,
-    reviews: 189,
-  },
-  {
-    name: "HP DeskJet Wireless Printer 4155",
-    price: 119,
-    image: "🖨️",
-    rating: 4.4,
-    reviews: 345,
-  },
-  {
-    name: "Samsung Electronics Galaxy Buds 2",
-    price: 119,
-    image: "🎧",
-    rating: 4.7,
-    reviews: 432,
-  },
-  {
-    name: "AVerMedia 1080p HD Webcam",
-    price: 79,
-    image: "📷",
-    rating: 4.5,
-    reviews: 156,
-  },
-  {
-    name: "HP All-in-One Wireless Printer",
-    price: 199,
-    image: "🖨️",
-    rating: 4.6,
-    reviews: 267,
-  },
-  {
-    name: "Sony WF-1000XM4 Wireless Earbuds",
-    price: 279,
-    image: "🎧",
-    rating: 4.8,
-    reviews: 543,
-  },
-];
-
-export default function ComputerAccessories() {
+export default function ComputerAccessories({ onQuickView }) {
   const [active, setActive] = useState("All Product");
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        setLoading(true);
+        // Merr nga kategoria "accessories" ose të gjitha
+        const result = await productService.getAll({
+          limit: 8,
+          sort: "newest",
+        });
+        const transformed = result.data.map((p) => ({
+          id: p.id,
+          slug: p.slug,
+          name: p.name,
+          price: parseFloat(p.price),
+          oldPrice: p.compare_price ? parseFloat(p.compare_price) : null,
+          discount: p.compare_price
+            ? Math.round(((p.compare_price - p.price) / p.compare_price) * 100)
+            : null,
+          image: p.images?.[0]?.image_url || "📦",
+          rating: parseFloat(p.avg_rating) || 0,
+          reviews: p.review_count || 0,
+        }));
+        setProducts(transformed);
+      } catch (err) {
+        console.error("Failed to fetch accessories:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchProducts();
+  }, []);
 
   return (
     <section className="max-w-7xl mx-auto px-3 sm:px-4 py-6 sm:py-8">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 sm:mb-6 gap-3 sm:gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-3">
         <h2 className="text-xl sm:text-2xl font-bold text-dark">
           Computer Accessories
         </h2>
-
-        {/* Scrollable tabs on mobile */}
-        <div className="flex items-center gap-1 overflow-x-auto -mx-3 px-3 sm:mx-0 sm:px-0 sm:overflow-visible">
-          <div className="flex items-center gap-1 min-w-max sm:min-w-0 sm:flex-wrap">
+        <div className="flex items-center gap-1 overflow-x-auto -mx-3 px-3 sm:mx-0 sm:px-0">
+          <div className="flex items-center gap-1 min-w-max sm:flex-wrap">
             {tabs.map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActive(tab)}
-                className={`px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm font-medium rounded transition-colors whitespace-nowrap ${
+                className={`px-2 sm:px-3 py-1.5 text-xs sm:text-sm font-medium rounded transition-colors whitespace-nowrap ${
                   active === tab
                     ? "bg-primary text-white"
                     : "text-dark-300 hover:text-primary"
@@ -94,51 +68,53 @@ export default function ComputerAccessories() {
                 {tab}
               </button>
             ))}
-            <a
-              href="#"
-              className="text-primary text-xs sm:text-sm font-semibold ml-2 hidden lg:inline hover:underline whitespace-nowrap"
-            >
-              Browse All →
-            </a>
           </div>
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-3 sm:gap-4">
-        {/* Product grid */}
-        <div className="lg:col-span-3 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
-          {products.map((product, i) => (
-            <ProductCard key={i} product={product} />
-          ))}
-        </div>
+        {loading ? (
+          <div className="lg:col-span-3 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+            {[...Array(8)].map((_, i) => (
+              <div
+                key={i}
+                className="bg-white border border-gray-100 rounded-lg p-4 animate-pulse"
+              >
+                <div className="aspect-square bg-gray-100 rounded mb-3"></div>
+                <div className="h-3 bg-gray-100 rounded w-1/2 mb-2"></div>
+                <div className="h-4 bg-gray-100 rounded mb-2"></div>
+                <div className="h-5 bg-gray-100 rounded w-1/3"></div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="lg:col-span-3 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+            {products.map((p) => (
+              <ProductCard key={p.id} product={p} onQuickView={onQuickView} />
+            ))}
+          </div>
+        )}
 
-        {/* Side banners — 2 cols on mobile, stacked on desktop */}
-        <div className="grid grid-cols-2 lg:grid-cols-1 gap-3 sm:gap-4">
-          <div className="bg-warning rounded-lg p-4 sm:p-6 flex-1 relative overflow-hidden min-h-[160px] sm:min-h-[200px]">
-            <p className="text-dark text-[10px] sm:text-xs font-bold mb-1">
-              XIAOMI
-            </p>
+        <div className="grid grid-cols-2 lg:grid-cols-1 gap-3">
+          <div className="bg-warning rounded-lg p-4 sm:p-6 relative overflow-hidden min-h-[160px] sm:min-h-[200px]">
+            <p className="text-dark text-[10px] font-bold mb-1">XIAOMI</p>
             <h3 className="text-base sm:text-xl font-bold text-dark mb-1 leading-tight">
               True Wireless
               <br />
               Earbuds
             </h3>
-            <p className="text-dark-300 text-[10px] sm:text-xs mb-1 sm:mb-2">
-              Up to 40% OFF
-            </p>
-            <p className="text-primary font-bold text-lg sm:text-2xl mb-2 sm:mb-3">
+            <p className="text-primary font-bold text-lg sm:text-2xl mb-2">
               $199 USD
             </p>
-            <button className="bg-dark hover:bg-dark-100 text-white text-[10px] sm:text-xs font-bold px-2 sm:px-3 py-1 sm:py-1.5 rounded">
+            <button className="bg-dark text-white text-[10px] font-bold px-3 py-1.5 rounded">
               SHOP NOW →
             </button>
             <div className="absolute -bottom-4 -right-4 text-3xl sm:text-5xl">
               🎧
             </div>
           </div>
-
-          <div className="bg-accent-blue text-white rounded-lg p-4 sm:p-6 flex-1 relative overflow-hidden min-h-[160px] sm:min-h-[200px]">
-            <p className="text-warning text-[10px] sm:text-xs font-bold mb-1">
+          <div className="bg-accent-blue text-white rounded-lg p-4 sm:p-6 relative overflow-hidden min-h-[160px] sm:min-h-[200px]">
+            <p className="text-warning text-[10px] font-bold mb-1">
               SUMMER SALES
             </p>
             <h3 className="text-2xl sm:text-3xl font-bold mb-1 leading-tight">
@@ -146,13 +122,9 @@ export default function ComputerAccessories() {
               <br />
               DISCOUNT
             </h3>
-            <p className="text-gray-300 text-[10px] sm:text-xs mb-2 sm:mb-3 hidden sm:block">
-              Only for SmartPhone product
-            </p>
-            <button className="bg-primary hover:bg-primary-600 text-white text-[10px] sm:text-xs font-bold px-2 sm:px-3 py-1 sm:py-1.5 rounded">
+            <button className="bg-primary text-white text-[10px] font-bold px-3 py-1.5 rounded mt-2">
               SHOP NOW →
             </button>
-            <div className="absolute -top-4 -right-4 w-16 h-16 sm:w-20 sm:h-20 bg-white/10 rounded-full" />
           </div>
         </div>
       </div>
