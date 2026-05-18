@@ -1,105 +1,19 @@
 import { useState, useEffect } from "react";
 import ProductCard from "../common/ProductCard";
+import { productService } from "../../services/productService";
 
-const dealProducts = [
-  {
-    name: "Sony PlayStation 5 Console with Wireless Controller",
-    price: 499,
-    oldPrice: 599,
-    discount: 17,
-    image: "🎮",
-    rating: 4.8,
-    reviews: 234,
-    badge: "HOT",
-  },
-  {
-    name: "DJI Mavic Mini Drone with 4K Camera",
-    price: 899,
-    image: "🚁",
-    rating: 4.7,
-    reviews: 156,
-  },
-  {
-    name: "Sony Alpha A7 III Mirrorless Camera",
-    price: 1999,
-    oldPrice: 2299,
-    discount: 13,
-    image: "📷",
-    rating: 4.9,
-    reviews: 89,
-    badge: "NEW",
-    badgeColor: "green",
-  },
-  {
-    name: "Xbox Wireless Controller — Carbon Black",
-    price: 59,
-    oldPrice: 79,
-    discount: 25,
-    image: "🎮",
-    rating: 4.6,
-    reviews: 412,
-  },
-  {
-    name: "Sony WH-1000XM4 Wireless Headphones",
-    price: 348,
-    oldPrice: 399,
-    discount: 13,
-    image: "🎧",
-    rating: 4.9,
-    reviews: 678,
-    badge: "-13%",
-    badgeColor: "red",
-  },
-  {
-    name: 'Apple iPad Pro 12.9" with M2 Chip',
-    price: 1099,
-    image: "📱",
-    rating: 4.8,
-    reviews: 234,
-  },
-  {
-    name: "Portable Wireless Mouse 1600 DPI",
-    price: 29,
-    oldPrice: 49,
-    image: "🖱️",
-    rating: 4.4,
-    reviews: 321,
-  },
-  {
-    name: "Dell Curved 4K UHD Monitor 32 inch",
-    price: 549,
-    image: "🖥️",
-    rating: 4.7,
-    reviews: 145,
-  },
-  {
-    name: "Smart Camera 5MP Wireless Monitoring",
-    price: 89,
-    oldPrice: 129,
-    discount: 31,
-    image: "📹",
-    rating: 4.5,
-    reviews: 267,
-  },
-  {
-    name: "JBL Flip 5 Waterproof Portable Speaker",
-    price: 119,
-    image: "🔊",
-    rating: 4.8,
-    reviews: 543,
-    badge: "BEST",
-    badgeColor: "green",
-  },
-];
-
-export default function BestDealsSection() {
+export default function BestDealsSection({ onQuickView }) {
   const [time, setTime] = useState({
     days: 364,
     hours: 21,
     mins: 57,
     secs: 21,
   });
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
+  // Countdown timer
   useEffect(() => {
     const timer = setInterval(() => {
       setTime((prev) => {
@@ -123,6 +37,41 @@ export default function BestDealsSection() {
     return () => clearInterval(timer);
   }, []);
 
+  // Fetch products from backend
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        setLoading(true);
+        const result = await productService.getBestDeals();
+        // Transform data për ProductCard
+        const transformed = result.data.map((p) => ({
+          id: p.id,
+          slug: p.slug,
+          name: p.name,
+          price: parseFloat(p.price),
+          oldPrice: p.compare_price ? parseFloat(p.compare_price) : null,
+          discount: p.compare_price
+            ? Math.round(((p.compare_price - p.price) / p.compare_price) * 100)
+            : null,
+          image: p.images?.[0]?.image_url || "📦",
+          rating: parseFloat(p.avg_rating) || 0,
+          reviews: p.review_count || 0,
+          badge: p.is_featured ? "HOT" : null,
+          badgeColor: "primary",
+        }));
+        setProducts(transformed);
+        setError(null);
+      } catch (err) {
+        console.error("Failed to fetch products:", err);
+        setError("S'mund të ngarkohen produktet");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, []);
+
   const TimeBox = ({ value, label }) => (
     <div className="bg-dark text-white px-2 sm:px-3 py-1.5 sm:py-2 rounded text-center min-w-[38px] sm:min-w-[48px]">
       <div className="font-bold text-sm sm:text-lg leading-none">
@@ -136,17 +85,8 @@ export default function BestDealsSection() {
 
   return (
     <section className="max-w-7xl mx-auto px-3 sm:px-4 py-6 sm:py-8">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 sm:mb-6 gap-3 sm:gap-4">
-        <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
-          <h2 className="text-xl sm:text-2xl font-bold text-dark">
-            Best Deals
-          </h2>
-          <span className="text-dark-300 text-xs sm:text-sm hidden lg:inline">
-            Don't wait. The time will never be just right.
-          </span>
-        </div>
-
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 sm:mb-6 gap-3">
+        <h2 className="text-xl sm:text-2xl font-bold text-dark">Best Deals</h2>
         <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
           <span className="text-dark text-xs sm:text-sm font-semibold">
             Deals ends in:
@@ -160,21 +100,36 @@ export default function BestDealsSection() {
             <span className="text-dark font-bold">:</span>
             <TimeBox value={time.secs} label="Sec" />
           </div>
-          <a
-            href="#"
-            className="text-primary font-semibold text-xs sm:text-sm hover:underline ml-auto sm:ml-2 hidden md:inline"
-          >
-            Browse All →
-          </a>
         </div>
       </div>
 
-      {/* Product grid — 2 cols mobile, 3 tablet, 4 lg, 5 xl */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4">
-        {dealProducts.map((product, i) => (
-          <ProductCard key={i} product={product} />
-        ))}
-      </div>
+      {loading ? (
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4">
+          {[...Array(10)].map((_, i) => (
+            <div
+              key={i}
+              className="bg-white border border-gray-100 rounded-lg p-4 animate-pulse"
+            >
+              <div className="aspect-square bg-gray-100 rounded mb-3"></div>
+              <div className="h-3 bg-gray-100 rounded w-1/2 mb-2"></div>
+              <div className="h-4 bg-gray-100 rounded mb-2"></div>
+              <div className="h-5 bg-gray-100 rounded w-1/3"></div>
+            </div>
+          ))}
+        </div>
+      ) : error ? (
+        <div className="text-center py-12 text-dark-300">{error}</div>
+      ) : (
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4">
+          {products.map((p, i) => (
+            <ProductCard
+              key={p.id || i}
+              product={p}
+              onQuickView={onQuickView}
+            />
+          ))}
+        </div>
+      )}
     </section>
   );
 }
