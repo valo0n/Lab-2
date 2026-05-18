@@ -317,6 +317,275 @@ async function seed() {
   } finally {
     await prisma.$disconnect();
   }
+  // --- PRODUCTS ---
+  console.log("\nSeeding products...");
+
+  const categoryMap = {};
+  const allCats = await prisma.category.findMany();
+  allCats.forEach((c) => {
+    categoryMap[c.slug] = c.id;
+  });
+
+  const brandMap = {};
+  const allBrands = await prisma.brand.findMany();
+  allBrands.forEach((b) => {
+    brandMap[b.slug] = b.id;
+  });
+
+  const products = [
+    // Best Deals (10)
+    {
+      name: "Sony PlayStation 5 Console with Wireless Controller",
+      slug: "sony-ps5-console",
+      category: "gaming",
+      brand: "sony",
+      price: 499,
+      compare_price: 599,
+      stock: 50,
+      is_featured: true,
+      image: "🎮",
+      rating: 4.8,
+      reviews: 234,
+    },
+    {
+      name: "DJI Mavic Mini Drone with 4K Camera",
+      slug: "dji-mavic-mini-drone",
+      category: "camera-photo",
+      brand: "dji",
+      price: 899,
+      stock: 30,
+      image: "🚁",
+      rating: 4.7,
+      reviews: 156,
+    },
+    {
+      name: "Sony Alpha A7 III Mirrorless Camera",
+      slug: "sony-alpha-a7-iii",
+      category: "camera-photo",
+      brand: "sony",
+      price: 1999,
+      compare_price: 2299,
+      stock: 15,
+      is_featured: true,
+      image: "📷",
+      rating: 4.9,
+      reviews: 89,
+    },
+    {
+      name: "Xbox Wireless Controller — Carbon Black",
+      slug: "xbox-wireless-controller",
+      category: "gaming",
+      brand: "microsoft",
+      price: 59,
+      compare_price: 79,
+      stock: 200,
+      image: "🎮",
+      rating: 4.6,
+      reviews: 412,
+    },
+    {
+      name: "Sony WH-1000XM4 Wireless Headphones",
+      slug: "sony-wh-1000xm4",
+      category: "headphones",
+      brand: "sony",
+      price: 348,
+      compare_price: 399,
+      stock: 75,
+      is_featured: true,
+      image: "🎧",
+      rating: 4.9,
+      reviews: 678,
+    },
+    {
+      name: "Apple iPad Pro 12.9 with M2 Chip",
+      slug: "apple-ipad-pro-m2",
+      category: "smartphone",
+      brand: "apple",
+      price: 1099,
+      stock: 40,
+      image: "📱",
+      rating: 4.8,
+      reviews: 234,
+    },
+    {
+      name: "Portable Wireless Mouse 1600 DPI",
+      slug: "wireless-mouse-1600dpi",
+      category: "accessories",
+      brand: "logitech",
+      price: 29,
+      compare_price: 49,
+      stock: 300,
+      image: "🖱️",
+      rating: 4.4,
+      reviews: 321,
+    },
+    {
+      name: "Dell Curved 4K UHD Monitor 32 inch",
+      slug: "dell-curved-4k-monitor",
+      category: "computer-laptop",
+      brand: "dell",
+      price: 549,
+      stock: 25,
+      image: "🖥️",
+      rating: 4.7,
+      reviews: 145,
+    },
+    {
+      name: "Smart Camera 5MP Wireless Monitoring",
+      slug: "smart-camera-5mp",
+      category: "camera-photo",
+      brand: "samsung",
+      price: 89,
+      compare_price: 129,
+      stock: 100,
+      image: "📹",
+      rating: 4.5,
+      reviews: 267,
+    },
+    {
+      name: "JBL Flip 5 Waterproof Portable Speaker",
+      slug: "jbl-flip-5-speaker",
+      category: "headphones",
+      brand: "jbl",
+      price: 119,
+      stock: 80,
+      is_featured: true,
+      image: "🔊",
+      rating: 4.8,
+      reviews: 543,
+    },
+
+    // Featured Products (8)
+    {
+      name: "TOZO T6 True Wireless Earbuds",
+      slug: "tozo-t6-earbuds",
+      category: "headphones",
+      brand: "tozo",
+      price: 70,
+      stock: 150,
+      image: "🎧",
+      rating: 4.5,
+      reviews: 738,
+    },
+    {
+      name: "Samsung Galaxy S22 Ultra 5G",
+      slug: "samsung-galaxy-s22-ultra",
+      category: "smartphone",
+      brand: "samsung",
+      price: 1199,
+      stock: 60,
+      is_featured: true,
+      image: "📱",
+      rating: 4.7,
+      reviews: 412,
+    },
+    {
+      name: "Amazon Smart TV Stick 4K Max",
+      slug: "amazon-tv-stick-4k",
+      category: "tv-homes",
+      brand: "amazon",
+      price: 54,
+      stock: 200,
+      image: "📺",
+      rating: 4.8,
+      reviews: 891,
+    },
+    {
+      name: "Portable Wireless Speaker JBL",
+      slug: "jbl-portable-speaker",
+      category: "headphones",
+      brand: "jbl",
+      price: 99,
+      stock: 90,
+      image: "🔊",
+      rating: 4.6,
+      reviews: 234,
+    },
+    {
+      name: "Vivo Y75 5G Smartphone 8GB+128GB",
+      slug: "vivo-y75-5g",
+      category: "smartphone",
+      brand: "vivo",
+      price: 349,
+      stock: 70,
+      image: "📱",
+      rating: 4.4,
+      reviews: 156,
+    },
+    {
+      name: "DJI Mini 2 Drone Quadcopter UAV",
+      slug: "dji-mini-2-drone",
+      category: "camera-photo",
+      brand: "dji",
+      price: 449,
+      stock: 25,
+      image: "🚁",
+      rating: 4.9,
+      reviews: 67,
+    },
+    {
+      name: "Apple iPad Air with M1 Chip 64GB",
+      slug: "apple-ipad-air-m1",
+      category: "smartphone",
+      brand: "apple",
+      price: 599,
+      stock: 45,
+      image: "📱",
+      rating: 4.8,
+      reviews: 543,
+    },
+    {
+      name: "Bose QuietComfort 45 Headphones",
+      slug: "bose-qc45-headphones",
+      category: "headphones",
+      brand: "bose",
+      price: 329,
+      stock: 55,
+      image: "🎧",
+      rating: 4.7,
+      reviews: 189,
+    },
+  ];
+
+  for (const p of products) {
+    const cat_id = categoryMap[p.category];
+    const brand_id = brandMap[p.brand];
+
+    if (!cat_id) {
+      console.log(`⚠️ Category "${p.category}" not found for "${p.name}"`);
+      continue;
+    }
+
+    const created = await prisma.product.create({
+      data: {
+        name: p.name,
+        slug: p.slug,
+        description: `High-quality ${p.name}. Premium features, fast shipping, 2-year warranty.`,
+        short_description: p.name,
+        price: p.price,
+        compare_price: p.compare_price || null,
+        stock_qty: p.stock,
+        sku: `SKU-${p.slug.toUpperCase().slice(0, 20)}`,
+        is_featured: p.is_featured || false,
+        avg_rating: p.rating,
+        review_count: p.reviews,
+        category_id: cat_id,
+        brand_id: brand_id || null,
+        created_by: 1,
+      },
+    });
+
+    // Add primary image (emoji placeholder)
+    await prisma.productImage.create({
+      data: {
+        product_id: created.id,
+        image_url: p.image,
+        is_primary: true,
+        sort_order: 0,
+      },
+    });
+  }
+  console.log(`✅ ${products.length} Products`);
 }
 
 seed();
