@@ -1,79 +1,42 @@
+import { useEffect, useState } from "react";
 import TopBar from "../../components/layout/TopBar";
 import Header from "../../components/layout/Header";
 import Navigation from "../../components/layout/Navigation";
 import Footer from "../../components/layout/Footer";
 import { Home, Search, Star, Heart, Eye, ShoppingCart } from "lucide-react";
 
-const products = [
-  {
-    badge: "HOT",
-    name: "TOZO T6 True Wireless Earbuds Bluetooth Headphones",
-    price: "$70",
-    image: "/images/product-1.png",
-  },
-  {
-    name: "Samsung Electronics Galaxy S21 5G",
-    price: "$2,300",
-    image: "/images/product-2.png",
-  },
-  {
-    badge: "BEST DEALS",
-    name: "Amazon Basics High-Speed HDMI Cable",
-    price: "$360",
-    image: "/images/product-3.png",
-  },
-  {
-    name: "Portable Washing Machine, 11lbs capacity",
-    price: "$80",
-    image: "/images/product-4.png",
-  },
-  {
-    name: "Wired Over-Ear Gaming Headphones",
-    price: "$1,500",
-    image: "/images/product-5.png",
-  },
-  {
-    badge: "25% OFF",
-    name: "Polaroid 57-Inch Photo/Video Tripod",
-    price: "$1,200",
-    image: "/images/product-6.png",
-  },
-  {
-    name: "Dell Optiplex 7000x7480 All-in-One Computer",
-    price: "$250",
-    image: "/images/product-7.png",
-  },
-  {
-    badge: "SALE",
-    name: "4K UHD LED Smart TV with Chromecast Built-in",
-    price: "$220",
-    image: "/images/product-8.png",
-  },
-  {
-    badge: "BEST DEALS",
-    name: "Sony WH-1000XM4 Wireless Headphones",
-    price: "$180",
-    image: "/images/product-9.png",
-  },
-  {
-    name: "Flexible Wireless Headphones",
-    price: "$80",
-    image: "/images/product-10.png",
-  },
-  {
-    badge: "HOT",
-    name: "Redragon K580 Mechanical Gaming Keyboard",
-    price: "$250",
-    image: "/images/product-11.png",
-  },
-  {
-    name: "Dell Laser Printer with Scanner",
-    price: "$320",
-    image: "/images/product-12.png",
-  },
-];
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
 export default function ShopPage() {
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
+
+  useEffect(() => {
+    fetch(`${API_URL}/products`)
+      .then((res) => res.json())
+      .then((data) => {
+        setProducts(data.products || data.data || data);
+      })
+      .catch((err) => {
+        console.error("Error fetching products:", err);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  }, []);
+
+  const filteredProducts = products.filter((product) =>
+    product.name?.toLowerCase().includes(search.toLowerCase())
+  );
+
+  const getImageUrl = (image) => {
+    if (!image) return "/images/product-1.png";
+    if (image.startsWith("http")) return image;
+    if (image.startsWith("/uploads")) return `http://localhost:5000${image}`;
+    return image;
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 font-sans">
       <TopBar />
@@ -122,6 +85,7 @@ export default function ShopPage() {
                 <input placeholder="Min price" className="border px-3 py-2 text-sm" />
                 <input placeholder="Max price" className="border px-3 py-2 text-sm" />
               </div>
+
               {["All Price", "Under $25", "$25 to $100", "$100 to $300", "$300 to $500", "$500 to $1,000"].map((item) => (
                 <label key={item} className="flex items-center gap-2 text-sm text-gray-600 mb-3">
                   <input type="radio" name="price" className="accent-orange-500" />
@@ -154,7 +118,9 @@ export default function ShopPage() {
             <div className="border border-orange-200 p-4 text-center mt-6">
               <img src="/images/watch-ad.png" alt="" className="mx-auto mb-3" />
               <h3 className="font-semibold text-gray-900">Heavy on Features. Light on Price.</h3>
-              <p className="text-sm text-gray-500 my-2">Only for: <span className="bg-yellow-300 px-2 py-1">$299 USD</span></p>
+              <p className="text-sm text-gray-500 my-2">
+                Only for: <span className="bg-yellow-300 px-2 py-1">$299 USD</span>
+              </p>
               <button className="w-full bg-orange-500 text-white py-3 text-sm font-semibold mt-3">
                 SHOP NOW
               </button>
@@ -166,6 +132,8 @@ export default function ShopPage() {
               <div className="relative w-[430px]">
                 <input
                   placeholder="Search for anything..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
                   className="w-full border border-gray-200 h-11 px-4 pr-10 text-sm outline-none"
                 />
                 <Search size={18} className="absolute right-3 top-3 text-gray-500" />
@@ -184,50 +152,65 @@ export default function ShopPage() {
                 Active Filters: <b className="text-gray-900">Electronic Devices</b>
               </span>
               <span className="text-gray-600">
-                <b className="text-gray-900">65,867</b> Results found.
+                <b className="text-gray-900">{filteredProducts.length}</b> Results found.
               </span>
             </div>
 
-            <div className="grid grid-cols-4 gap-4">
-              {products.map((product, index) => (
-                <div key={index} className="border border-gray-200 p-3 relative group bg-white">
-                  {product.badge && (
-                    <span className="absolute top-3 left-3 bg-orange-500 text-white text-[10px] font-semibold px-2 py-1">
-                      {product.badge}
-                    </span>
-                  )}
+            {loading ? (
+              <p className="text-center py-10 text-gray-500">Loading products...</p>
+            ) : (
+              <div className="grid grid-cols-4 gap-4">
+                {filteredProducts.map((product) => (
+                  <div
+                    key={product._id || product.id}
+                    className="border border-gray-200 p-3 relative group bg-white"
+                  >
+                    {product.badge && (
+                      <span className="absolute top-3 left-3 bg-orange-500 text-white text-[10px] font-semibold px-2 py-1">
+                        {product.badge}
+                      </span>
+                    )}
 
-                  <div className="h-40 flex items-center justify-center mb-3">
-                    <img src={product.image} alt={product.name} className="max-h-full object-contain" />
+                    <div className="h-40 flex items-center justify-center mb-3">
+                      <img
+                        src={getImageUrl(product.image || product.images?.[0])}
+                        alt={product.name}
+                        className="max-h-full object-contain"
+                      />
+                    </div>
+
+                    <div className="flex text-orange-400 mb-2">
+                      {[1, 2, 3, 4, 5].map((i) => (
+                        <Star key={i} size={13} fill="currentColor" />
+                      ))}
+                      <span className="text-gray-400 text-xs ml-1">
+                        ({product.reviews || 0})
+                      </span>
+                    </div>
+
+                    <h3 className="text-sm text-gray-800 leading-5 min-h-[42px]">
+                      {product.name}
+                    </h3>
+
+                    <p className="text-sm font-semibold text-blue-500 mt-2">
+                      ${product.price}
+                    </p>
+
+                    <div className="absolute inset-0 bg-white/70 hidden group-hover:flex items-center justify-center gap-2">
+                      <button className="w-9 h-9 rounded-full bg-white shadow flex items-center justify-center">
+                        <Heart size={16} />
+                      </button>
+                      <button className="w-10 h-10 rounded-full bg-orange-500 text-white shadow flex items-center justify-center">
+                        <ShoppingCart size={17} />
+                      </button>
+                      <button className="w-9 h-9 rounded-full bg-white shadow flex items-center justify-center">
+                        <Eye size={16} />
+                      </button>
+                    </div>
                   </div>
-
-                  <div className="flex text-orange-400 mb-2">
-                    {[1, 2, 3, 4, 5].map((i) => (
-                      <Star key={i} size={13} fill="currentColor" />
-                    ))}
-                    <span className="text-gray-400 text-xs ml-1">(738)</span>
-                  </div>
-
-                  <h3 className="text-sm text-gray-800 leading-5 min-h-[42px]">
-                    {product.name}
-                  </h3>
-
-                  <p className="text-sm font-semibold text-blue-500 mt-2">{product.price}</p>
-
-                  <div className="absolute inset-0 bg-white/70 hidden group-hover:flex items-center justify-center gap-2">
-                    <button className="w-9 h-9 rounded-full bg-white shadow flex items-center justify-center">
-                      <Heart size={16} />
-                    </button>
-                    <button className="w-10 h-10 rounded-full bg-orange-500 text-white shadow flex items-center justify-center">
-                      <ShoppingCart size={17} />
-                    </button>
-                    <button className="w-9 h-9 rounded-full bg-white shadow flex items-center justify-center">
-                      <Eye size={16} />
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
 
             <div className="flex justify-center items-center gap-2 mt-8">
               <button className="w-9 h-9 border rounded-full text-orange-500">‹</button>

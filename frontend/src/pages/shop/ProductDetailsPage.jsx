@@ -1,53 +1,39 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
 import TopBar from "../../components/layout/TopBar";
 import Header from "../../components/layout/Header";
 import Navigation from "../../components/layout/Navigation";
 import Footer from "../../components/layout/Footer";
 
-const productImages = [
-    "https://images.unsplash.com/photo-1583394838336-acd977736f90?auto=format&fit=crop&w=400&q=80",
-  "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?auto=format&fit=crop&w=900&q=80",
-  "https://images.unsplash.com/photo-1515879218367-8466d910aaa4?auto=format&fit=crop&w=900&q=80",
-  "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=900&q=80",
-  "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=900&q=80",
-];
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+const SERVER_URL = API_URL.replace("/api", "");
 
-const relatedProducts = [
-  {
-    id: 1,
-    name: "Bose Sport Earbuds",
-    price: "$1,500",
-    image:
-      "https://images.unsplash.com/photo-1583394838336-acd977736f90?auto=format&fit=crop&w=400&q=80",
-  },
-  {
-    id: 2,
-    name: "Samsung Galaxy S21 5G",
-    price: "$1,500",
-    image:
-      "https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?auto=format&fit=crop&w=400&q=80",
-  },
-  {
-    id: 3,
-    name: "JBL FLIP 4 Speaker",
-    price: "$1,500",
-    image:
-      "https://images.unsplash.com/photo-1589003077984-894e133dabab?auto=format&fit=crop&w=400&q=80",
-  },
-  {
-    id: 4,
-    name: "Portable Gaming Machine",
-    price: "$1,500",
-    image:
-      "https://images.unsplash.com/photo-1606144042614-b2417e99c4e3?auto=format&fit=crop&w=400&q=80",
-  },
-];
+function getImageUrl(image) {
+  if (!image) return "/images/product-1.png";
+
+  if (typeof image === "object") {
+    image = image.url || image.path || image.image;
+  }
+
+  if (!image) return "/images/product-1.png";
+  if (image.startsWith("http")) return image;
+  if (image.startsWith("/uploads")) return `${SERVER_URL}${image}`;
+  if (image.startsWith("uploads")) return `${SERVER_URL}/${image}`;
+
+  return image;
+}
+
+function formatPrice(price) {
+  if (price === undefined || price === null || price === "") return "$0";
+  const cleanPrice = String(price).replace("$", "");
+  return `$${cleanPrice}`;
+}
 
 function ProductCard({ product }) {
   return (
     <div className="flex items-center gap-3 rounded border border-gray-200 bg-white p-3 hover:shadow-sm transition">
       <img
-        src={product.image}
+        src={getImageUrl(product.image || product.images?.[0])}
         alt={product.name}
         className="h-16 w-16 rounded object-cover"
       />
@@ -55,25 +41,92 @@ function ProductCard({ product }) {
         <h4 className="text-sm font-medium text-gray-800 line-clamp-2">
           {product.name}
         </h4>
-        <p className="mt-1 text-sm font-semibold text-sky-600">{product.price}</p>
+        <p className="mt-1 text-sm font-semibold text-sky-600">
+          {formatPrice(product.salePrice || product.price)}
+        </p>
       </div>
     </div>
   );
 }
 
 export default function ProductDetailsPage() {
+  const { slug } = useParams();
+
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
   const [wishlistOpen, setWishlistOpen] = useState(false);
   const [accountOpen, setAccountOpen] = useState(false);
 
-  const [selectedImage, setSelectedImage] = useState(productImages[0]);
+  const [product, setProduct] = useState(null);
+  const [productImages, setProductImages] = useState([]);
+  const [relatedProducts, setRelatedProducts] = useState([]);
+
+  const [selectedImage, setSelectedImage] = useState("");
   const [quantity, setQuantity] = useState(1);
   const [activeTab, setActiveTab] = useState("description");
   const [selectedColor, setSelectedColor] = useState("orange");
   const [selectedSize, setSelectedSize] = useState("14-inch Liquid Retina XDR display");
   const [selectedMemory, setSelectedMemory] = useState("16GB unified memory");
   const [selectedStorage, setSelectedStorage] = useState("1TB SSD Storage");
+
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchProduct() {
+      try {
+        setLoading(true);
+
+        const res = await fetch(`${API_URL}/products/${slug}`);
+        const data = await res.json();
+
+        const productData = data.product || data.data || data;
+        setProduct(productData);
+
+        const images =
+          productData.images && productData.images.length > 0
+            ? productData.images.map((img) => getImageUrl(img))
+            : [getImageUrl(productData.image)];
+
+        setProductImages(images);
+        setSelectedImage(images[0]);
+
+        if (productData.colors && productData.colors.length > 0) {
+          setSelectedColor(productData.colors[0]);
+        }
+
+        if (productData.sizes && productData.sizes.length > 0) {
+          setSelectedSize(productData.sizes[0]);
+        }
+
+        if (productData.memoryOptions && productData.memoryOptions.length > 0) {
+          setSelectedMemory(productData.memoryOptions[0]);
+        }
+
+        if (productData.storageOptions && productData.storageOptions.length > 0) {
+          setSelectedStorage(productData.storageOptions[0]);
+        }
+
+        const productId = productData._id || productData.id;
+
+        if (productId) {
+          const relatedRes = await fetch(`${API_URL}/products/${productId}/related`);
+          const relatedData = await relatedRes.json();
+
+          setRelatedProducts(
+            relatedData.products || relatedData.data || relatedData || []
+          );
+        }
+      } catch (error) {
+        console.error("Error fetching product:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    if (slug) {
+      fetchProduct();
+    }
+  }, [slug]);
 
   const toggleCart = () => {
     setCartOpen((v) => !v);
@@ -92,6 +145,38 @@ export default function ProductDetailsPage() {
     setCartOpen(false);
     setWishlistOpen(false);
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 font-sans">
+        <TopBar />
+        <Header />
+        <Navigation />
+        <div className="py-20 text-center text-gray-500">
+          Loading product...
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
+  if (!product) {
+    return (
+      <div className="min-h-screen bg-gray-50 font-sans">
+        <TopBar />
+        <Header />
+        <Navigation />
+        <div className="py-20 text-center text-gray-500">
+          Product not found.
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
+  const brandName = product.brand?.name || product.brand || "N/A";
+  const categoryName = product.category?.name || product.category || "N/A";
+  const isInStock = product.stock > 0 || product.inStock === true;
 
   return (
     <div className="min-h-screen bg-gray-50 font-sans">
@@ -116,7 +201,7 @@ export default function ProductDetailsPage() {
             <div className="overflow-hidden rounded border border-gray-200 bg-white">
               <img
                 src={selectedImage}
-                alt="MacBook Pro"
+                alt={product.name}
                 className="h-[420px] w-full object-contain"
               />
             </div>
@@ -145,33 +230,44 @@ export default function ProductDetailsPage() {
           <div>
             <div className="mb-2 flex items-center gap-2">
               <div className="flex text-sm text-orange-400">★★★★★</div>
-              <p className="text-sm text-gray-500">47 Star Rating | 21,617 User feedback</p>
+              <p className="text-sm text-gray-500">
+                {product.rating || 5} Star Rating | {product.reviews || product.reviewCount || 0} User feedback
+              </p>
             </div>
 
             <h1 className="text-2xl font-semibold leading-snug text-gray-900">
-              2020 Apple MacBook Pro with Apple M1 Chip (13-inch, 8GB RAM,
-              256GB SSD Storage) - Space Gray
+              {product.name}
             </h1>
 
             <p className="mt-3 text-sm text-gray-500">
-              SKU: <span className="text-gray-700">AB245671</span>
+              SKU: <span className="text-gray-700">{product.sku || "N/A"}</span>
             </p>
             <p className="text-sm text-gray-500">
-              Brand: <span className="text-gray-700">Apple</span>
+              Brand: <span className="text-gray-700">{brandName}</span>
             </p>
             <p className="mt-1 text-sm text-green-600 font-medium">
-              Availability: In Stock
+              Availability: {isInStock ? "In Stock" : "Out of Stock"}
             </p>
             <p className="mt-1 text-sm text-gray-500">
-              Category: <span className="text-gray-700">Electronics Devices</span>
+              Category: <span className="text-gray-700">{categoryName}</span>
             </p>
 
             <div className="mt-5 flex items-center gap-3">
-              <span className="text-3xl font-bold text-sky-600">$1699</span>
-              <span className="text-lg text-gray-400 line-through">$1999.00</span>
-              <span className="rounded bg-yellow-400 px-2 py-1 text-xs font-semibold text-gray-900">
-                21% OFF
+              <span className="text-3xl font-bold text-sky-600">
+                {formatPrice(product.salePrice || product.price)}
               </span>
+
+              {product.oldPrice && (
+                <span className="text-lg text-gray-400 line-through">
+                  {formatPrice(product.oldPrice)}
+                </span>
+              )}
+
+              {product.discount && (
+                <span className="rounded bg-yellow-400 px-2 py-1 text-xs font-semibold text-gray-900">
+                  {product.discount}% OFF
+                </span>
+              )}
             </div>
 
             <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -180,7 +276,10 @@ export default function ProductDetailsPage() {
                   Color
                 </label>
                 <div className="flex items-center gap-3">
-                  {["orange", "gray", "zinc"].map((color) => (
+                  {(product.colors && product.colors.length > 0
+                    ? product.colors
+                    : ["orange", "gray", "zinc"]
+                  ).map((color) => (
                     <button
                       key={color}
                       onClick={() => setSelectedColor(color)}
@@ -195,7 +294,9 @@ export default function ProductDetailsPage() {
                             ? "#f59e0b"
                             : color === "gray"
                             ? "#d1d5db"
-                            : "#9ca3af",
+                            : color === "zinc"
+                            ? "#9ca3af"
+                            : color,
                       }}
                     />
                   ))}
@@ -211,9 +312,16 @@ export default function ProductDetailsPage() {
                   onChange={(e) => setSelectedSize(e.target.value)}
                   className="w-full rounded border border-gray-300 px-3 py-2 text-sm outline-none focus:border-orange-500"
                 >
-                  <option>14-inch Liquid Retina XDR display</option>
-                  <option>13-inch Retina display</option>
-                  <option>16-inch Liquid Retina display</option>
+                  {(product.sizes && product.sizes.length > 0
+                    ? product.sizes
+                    : [
+                        "14-inch Liquid Retina XDR display",
+                        "13-inch Retina display",
+                        "16-inch Liquid Retina display",
+                      ]
+                  ).map((size) => (
+                    <option key={size}>{size}</option>
+                  ))}
                 </select>
               </div>
 
@@ -226,9 +334,16 @@ export default function ProductDetailsPage() {
                   onChange={(e) => setSelectedMemory(e.target.value)}
                   className="w-full rounded border border-gray-300 px-3 py-2 text-sm outline-none focus:border-orange-500"
                 >
-                  <option>16GB unified memory</option>
-                  <option>8GB unified memory</option>
-                  <option>32GB unified memory</option>
+                  {(product.memoryOptions && product.memoryOptions.length > 0
+                    ? product.memoryOptions
+                    : [
+                        "16GB unified memory",
+                        "8GB unified memory",
+                        "32GB unified memory",
+                      ]
+                  ).map((memory) => (
+                    <option key={memory}>{memory}</option>
+                  ))}
                 </select>
               </div>
 
@@ -241,9 +356,16 @@ export default function ProductDetailsPage() {
                   onChange={(e) => setSelectedStorage(e.target.value)}
                   className="w-full rounded border border-gray-300 px-3 py-2 text-sm outline-none focus:border-orange-500"
                 >
-                  <option>1TB SSD Storage</option>
-                  <option>256GB SSD Storage</option>
-                  <option>512GB SSD Storage</option>
+                  {(product.storageOptions && product.storageOptions.length > 0
+                    ? product.storageOptions
+                    : [
+                        "1TB SSD Storage",
+                        "256GB SSD Storage",
+                        "512GB SSD Storage",
+                      ]
+                  ).map((storage) => (
+                    <option key={storage}>{storage}</option>
+                  ))}
                 </select>
               </div>
             </div>
@@ -324,27 +446,37 @@ export default function ProductDetailsPage() {
 
           <div className="mt-6 grid grid-cols-1 gap-8 lg:grid-cols-3">
             <div className="lg:col-span-1">
-              <h3 className="mb-3 text-base font-semibold text-gray-900">Description</h3>
+              <h3 className="mb-3 text-base font-semibold text-gray-900">
+                Description
+              </h3>
               <p className="text-sm leading-7 text-gray-600">
-                The most powerful MacBook Pro ever is here. With the blazing-fast
-                M1 Pro or M1 Max chip, the new 14-inch MacBook Pro delivers
-                ground-breaking performance and amazing battery life.
+                {product.description || "No description available for this product."}
               </p>
-              <p className="mt-4 text-sm leading-7 text-gray-600">
-                Add to that a stunning Liquid Retina XDR display, the best camera
-                and audio ever in a Mac notebook, and all the ports you need.
-                The first notebook of its kind, this MacBook Pro is a beast.
-              </p>
+
+              {product.longDescription && (
+                <p className="mt-4 text-sm leading-7 text-gray-600">
+                  {product.longDescription}
+                </p>
+              )}
             </div>
 
             <div>
-              <h3 className="mb-3 text-base font-semibold text-gray-900">Feature</h3>
+              <h3 className="mb-3 text-base font-semibold text-gray-900">
+                Feature
+              </h3>
               <ul className="space-y-3 text-sm text-gray-600">
-                <li>✔ Free 1 Year Warranty</li>
-                <li>✔ Free Shipping & Fasted Delivery</li>
-                <li>✔ 100% Money-back guarantee</li>
-                <li>✔ 24/7 Customer support</li>
-                <li>✔ Secure payment method</li>
+                {(product.features && product.features.length > 0
+                  ? product.features
+                  : [
+                      "Free 1 Year Warranty",
+                      "Free Shipping & Fasted Delivery",
+                      "100% Money-back guarantee",
+                      "24/7 Customer support",
+                      "Secure payment method",
+                    ]
+                ).map((feature) => (
+                  <li key={feature}>✔ {feature}</li>
+                ))}
               </ul>
             </div>
 
@@ -377,7 +509,7 @@ export default function ProductDetailsPage() {
             </h3>
             <div className="space-y-3">
               {relatedProducts.map((product) => (
-                <ProductCard key={product.id} product={product} />
+                <ProductCard key={product._id || product.id} product={product} />
               ))}
             </div>
           </div>
@@ -388,7 +520,10 @@ export default function ProductDetailsPage() {
             </h3>
             <div className="space-y-3">
               {relatedProducts.map((product) => (
-                <ProductCard key={`acc-${product.id}`} product={product} />
+                <ProductCard
+                  key={`acc-${product._id || product.id}`}
+                  product={product}
+                />
               ))}
             </div>
           </div>
@@ -399,7 +534,10 @@ export default function ProductDetailsPage() {
             </h3>
             <div className="space-y-3">
               {relatedProducts.map((product) => (
-                <ProductCard key={`apple-${product.id}`} product={product} />
+                <ProductCard
+                  key={`apple-${product._id || product.id}`}
+                  product={product}
+                />
               ))}
             </div>
           </div>
@@ -410,7 +548,10 @@ export default function ProductDetailsPage() {
             </h3>
             <div className="space-y-3">
               {relatedProducts.map((product) => (
-                <ProductCard key={`feat-${product.id}`} product={product} />
+                <ProductCard
+                  key={`feat-${product._id || product.id}`}
+                  product={product}
+                />
               ))}
             </div>
           </div>
