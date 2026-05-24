@@ -400,7 +400,27 @@ export default function ProductDetailsPage() {
 
             <div className="mt-5 flex flex-wrap items-center gap-5 text-sm text-gray-600">
               <button className="hover:text-orange-500">♡ Add to Wishlist</button>
-              <button className="hover:text-orange-500">⇄ Add to Compare</button>
+
+              <button
+                onClick={() => {
+                  const existingCompare = JSON.parse(localStorage.getItem("compare") || "[]");
+
+                  const productId = product._id || product.id;
+
+                  const alreadyExists = existingCompare.some(
+                    (item) => (item._id || item.id) === productId
+                  );
+
+                  if (!alreadyExists) {
+                    const updatedCompare = [...existingCompare, product].slice(0, 3);
+                    localStorage.setItem("compare", JSON.stringify(updatedCompare));
+                  }
+                }}
+                className="hover:text-orange-500"
+              >
+                ⇄ Add to Compare
+              </button>
+
               <div className="flex items-center gap-2">
                 <span>Share product:</span>
                 <span className="text-orange-500">f</span>
