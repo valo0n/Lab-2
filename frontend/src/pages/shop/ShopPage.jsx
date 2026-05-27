@@ -27,13 +27,15 @@ export default function ShopPage() {
   }, []);
 
   const filteredProducts = products.filter((product) =>
-    product.name?.toLowerCase().includes(search.toLowerCase())
+    product.name?.toLowerCase().includes(search.toLowerCase()),
   );
 
   const getImageUrl = (image) => {
-    if (!image) return "/images/product-1.png";
-    if (image.startsWith("http")) return image;
-    if (image.startsWith("/uploads")) return `http://localhost:5000${image}`;
+    if (!image) return "📦";
+    if (typeof image === "object") return image.image_url || "📦";
+    if (typeof image === "string" && image.startsWith("http")) return image;
+    if (typeof image === "string" && image.startsWith("/uploads"))
+      return `http://localhost:5000${image}`;
     return image;
   };
 
@@ -72,8 +74,15 @@ export default function ShopPage() {
                 "TV & Home Appliances",
                 "Watch & Accessories",
               ].map((item, i) => (
-                <label key={i} className="flex items-center gap-2 text-sm text-gray-600 mb-3">
-                  <input type="radio" name="cat" className="accent-orange-500" />
+                <label
+                  key={i}
+                  className="flex items-center gap-2 text-sm text-gray-600 mb-3"
+                >
+                  <input
+                    type="radio"
+                    name="cat"
+                    className="accent-orange-500"
+                  />
                   {item}
                 </label>
               ))}
@@ -82,13 +91,33 @@ export default function ShopPage() {
             <FilterSection title="PRICE RANGE">
               <input type="range" className="w-full accent-orange-500 mb-4" />
               <div className="grid grid-cols-2 gap-2 mb-4">
-                <input placeholder="Min price" className="border px-3 py-2 text-sm" />
-                <input placeholder="Max price" className="border px-3 py-2 text-sm" />
+                <input
+                  placeholder="Min price"
+                  className="border px-3 py-2 text-sm"
+                />
+                <input
+                  placeholder="Max price"
+                  className="border px-3 py-2 text-sm"
+                />
               </div>
 
-              {["All Price", "Under $25", "$25 to $100", "$100 to $300", "$300 to $500", "$500 to $1,000"].map((item) => (
-                <label key={item} className="flex items-center gap-2 text-sm text-gray-600 mb-3">
-                  <input type="radio" name="price" className="accent-orange-500" />
+              {[
+                "All Price",
+                "Under $25",
+                "$25 to $100",
+                "$100 to $300",
+                "$300 to $500",
+                "$500 to $1,000",
+              ].map((item) => (
+                <label
+                  key={item}
+                  className="flex items-center gap-2 text-sm text-gray-600 mb-3"
+                >
+                  <input
+                    type="radio"
+                    name="price"
+                    className="accent-orange-500"
+                  />
                   {item}
                 </label>
               ))}
@@ -96,8 +125,20 @@ export default function ShopPage() {
 
             <FilterSection title="POPULAR BRANDS">
               <div className="grid grid-cols-2 gap-2">
-                {["Apple", "Google", "Samsung", "Xiaomi", "Sony", "Panasonic", "LG", "Intel"].map((brand) => (
-                  <label key={brand} className="flex items-center gap-2 text-sm text-gray-600">
+                {[
+                  "Apple",
+                  "Google",
+                  "Samsung",
+                  "Xiaomi",
+                  "Sony",
+                  "Panasonic",
+                  "LG",
+                  "Intel",
+                ].map((brand) => (
+                  <label
+                    key={brand}
+                    className="flex items-center gap-2 text-sm text-gray-600"
+                  >
                     <input type="checkbox" className="accent-orange-500" />
                     {brand}
                   </label>
@@ -107,8 +148,20 @@ export default function ShopPage() {
 
             <FilterSection title="POPULAR TAG">
               <div className="flex flex-wrap gap-2">
-                {["Game", "Phone", "TV", "Asus Laptop", "Macbook", "SSD", "Graphics Card", "Power Bank"].map((tag) => (
-                  <span key={tag} className="border px-3 py-1 text-xs text-gray-600">
+                {[
+                  "Game",
+                  "Phone",
+                  "TV",
+                  "Asus Laptop",
+                  "Macbook",
+                  "SSD",
+                  "Graphics Card",
+                  "Power Bank",
+                ].map((tag) => (
+                  <span
+                    key={tag}
+                    className="border px-3 py-1 text-xs text-gray-600"
+                  >
                     {tag}
                   </span>
                 ))}
@@ -117,9 +170,12 @@ export default function ShopPage() {
 
             <div className="border border-orange-200 p-4 text-center mt-6">
               <img src="/images/watch-ad.png" alt="" className="mx-auto mb-3" />
-              <h3 className="font-semibold text-gray-900">Heavy on Features. Light on Price.</h3>
+              <h3 className="font-semibold text-gray-900">
+                Heavy on Features. Light on Price.
+              </h3>
               <p className="text-sm text-gray-500 my-2">
-                Only for: <span className="bg-yellow-300 px-2 py-1">$299 USD</span>
+                Only for:{" "}
+                <span className="bg-yellow-300 px-2 py-1">$299 USD</span>
               </p>
               <button className="w-full bg-orange-500 text-white py-3 text-sm font-semibold mt-3">
                 SHOP NOW
@@ -136,7 +192,10 @@ export default function ShopPage() {
                   onChange={(e) => setSearch(e.target.value)}
                   className="w-full border border-gray-200 h-11 px-4 pr-10 text-sm outline-none"
                 />
-                <Search size={18} className="absolute right-3 top-3 text-gray-500" />
+                <Search
+                  size={18}
+                  className="absolute right-3 top-3 text-gray-500"
+                />
               </div>
 
               <div className="flex items-center gap-3">
@@ -149,15 +208,19 @@ export default function ShopPage() {
 
             <div className="bg-gray-50 border border-gray-100 px-4 py-3 flex justify-between text-sm mb-5">
               <span className="text-gray-600">
-                Active Filters: <b className="text-gray-900">Electronic Devices</b>
+                Active Filters:{" "}
+                <b className="text-gray-900">Electronic Devices</b>
               </span>
               <span className="text-gray-600">
-                <b className="text-gray-900">{filteredProducts.length}</b> Results found.
+                <b className="text-gray-900">{filteredProducts.length}</b>{" "}
+                Results found.
               </span>
             </div>
 
             {loading ? (
-              <p className="text-center py-10 text-gray-500">Loading products...</p>
+              <p className="text-center py-10 text-gray-500">
+                Loading products...
+              </p>
             ) : (
               <div className="grid grid-cols-4 gap-4">
                 {filteredProducts.map((product) => (
@@ -213,18 +276,24 @@ export default function ShopPage() {
             )}
 
             <div className="flex justify-center items-center gap-2 mt-8">
-              <button className="w-9 h-9 border rounded-full text-orange-500">‹</button>
+              <button className="w-9 h-9 border rounded-full text-orange-500">
+                ‹
+              </button>
               {[1, 2, 3, 4, 5].map((n) => (
                 <button
                   key={n}
                   className={`w-9 h-9 rounded-full text-sm ${
-                    n === 1 ? "bg-orange-500 text-white" : "border text-gray-600"
+                    n === 1
+                      ? "bg-orange-500 text-white"
+                      : "border text-gray-600"
                   }`}
                 >
                   {n}
                 </button>
               ))}
-              <button className="w-9 h-9 border rounded-full text-orange-500">›</button>
+              <button className="w-9 h-9 border rounded-full text-orange-500">
+                ›
+              </button>
             </div>
           </section>
         </div>
