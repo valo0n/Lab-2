@@ -235,11 +235,24 @@ export default function ShopPage() {
                     )}
 
                     <div className="h-40 flex items-center justify-center mb-3">
-                      <img
-                        src={getImageUrl(product.image || product.images?.[0])}
-                        alt={product.name}
-                        className="max-h-full object-contain"
-                      />
+                      {(() => {
+                        const imgSrc = getImageUrl(
+                          product.image || product.images?.[0],
+                        );
+                        if (
+                          imgSrc.startsWith("http") ||
+                          imgSrc.startsWith("/")
+                        ) {
+                          return (
+                            <img
+                              src={imgSrc}
+                              alt={product.name}
+                              className="max-h-full object-contain"
+                            />
+                          );
+                        }
+                        return <span className="text-6xl">{imgSrc}</span>;
+                      })()}
                     </div>
 
                     <div className="flex text-orange-400 mb-2">
