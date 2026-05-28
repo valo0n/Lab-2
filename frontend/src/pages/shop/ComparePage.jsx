@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { Children, useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import TopBar from "../../components/layout/TopBar";
 import Header from "../../components/layout/Header";
 import Navigation from "../../components/layout/Navigation";
@@ -8,40 +9,76 @@ import { Home, X, Star, ShoppingCart, Heart } from "lucide-react";
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 const SERVER_URL = API_URL.replace("/api", "");
 
+function getProductId(product) {
+  return product?._id || product?.id;
+}
+
 function getImageUrl(image) {
   if (!image) return "/images/product-1.png";
 
+  let imagePath = image;
+
   if (typeof image === "object") {
-    image = image.url || image.path || image.image;
+    imagePath =
+      image.url ||
+      image.image_url ||
+      image.path ||
+      image.src ||
+      image.image ||
+      image.filename ||
+      "";
   }
 
-  if (!image) return "/images/product-1.png";
-  if (image.startsWith("http")) return image;
-  if (image.startsWith("/uploads")) return `${SERVER_URL}${image}`;
-  if (image.startsWith("uploads")) return `${SERVER_URL}/${image}`;
+  if (!imagePath) return "/images/product-1.png";
+  if (imagePath.startsWith("http")) return imagePath;
+  if (imagePath.startsWith("/uploads")) return `${SERVER_URL}${imagePath}`;
+  if (imagePath.startsWith("uploads")) return `${SERVER_URL}/${imagePath}`;
 
-  return image;
+  return imagePath;
+}
+
+function getProductImage(product) {
+  if (!product) return null;
+
+  if (product.image) return product.image;
+
+  if (Array.isArray(product.images) && product.images.length > 0) {
+    const primary = product.images.find((img) => img.is_primary);
+    return primary || product.images[0];
+  }
+
+  return null;
 }
 
 function formatPrice(price) {
-  if (price === undefined || price === null || price === "") return "$0";
-  const cleanPrice = String(price).replace("$", "");
-  return `$${cleanPrice}`;
+  const number = Number(price || 0);
+  return `$${number.toFixed(2)}`;
 }
 
 function getBrand(product) {
-  return product.brand?.name || product.brand || "N/A";
+  return product?.brand?.name || product?.brand || "N/A";
+}
+
+function getCategory(product) {
+  return product?.category?.name || product?.category || "N/A";
 }
 
 function getModel(product) {
-  return product.model || product.sku || product.slug || "N/A";
+  return product?.model || product?.sku || product?.slug || "N/A";
 }
 
 function getStockStatus(product) {
+  const stockValue =
+    product?.stock_quantity ??
+    product?.stock ??
+    product?.quantity ??
+    product?.inventory ??
+    0;
+
   const inStock =
-    product.stock > 0 ||
-    product.inStock === true ||
-    product.availability === "in_stock";
+    stockValue > 0 ||
+    product?.inStock === true ||
+    product?.availability === "in_stock";
 
   return inStock ? "IN STOCK" : "OUT OF STOCK";
 }
@@ -53,11 +90,31 @@ function getStockColor(product) {
 }
 
 function getRating(product) {
-  return product.rating || product.averageRating || 5;
+  return Number(product?.avg_rating || product?.rating || product?.averageRating || 0);
 }
 
 function getReviewCount(product) {
-  return product.reviews || product.reviewCount || product.totalReviews || 0;
+  return (
+    product?.review_count ||
+    product?.reviews ||
+    product?.reviewCount ||
+    product?.totalReviews ||
+    product?._count?.reviews ||
+    0
+  );
+}
+
+function addToLocalStorageList(key, product) {
+  const oldItems = JSON.parse(localStorage.getItem(key) || "[]");
+  const productId = getProductId(product);
+
+  const exists = oldItems.some(
+    (item) => String(getProductId(item)) === String(productId)
+  );
+
+  if (!exists) {
+    localStorage.setItem(key, JSON.stringify([...oldItems, product]));
+  }
 }
 
 export default function ComparePage() {
@@ -68,6 +125,8 @@ export default function ComparePage() {
 
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [actionLoadingId, setActionLoadingId] = useState(null);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     fetchCompareProducts();
@@ -76,50 +135,189 @@ export default function ComparePage() {
   async function fetchCompareProducts() {
     try {
       setLoading(true);
+      setError("");
+
+      const token = localStorage.getItem("token");
+
+      if (token) {
+        try {
+          const res = await fetch(`${API_URL}/compare`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+
+          if (res.ok) {
+            const data = await res.json();
+            const backendProducts = data.data || data.products || data.compare || [];
+
+            if (Array.isArray(backendProducts) && backendProducts.length > 0) {
+              const normalizedProducts = backendProducts.map((item) => {
+                return item.product || item;
+              });
+
+              setProducts(normalizedProducts.slice(0, 3));
+              return;
+            }
+          }
+        } catch (backendError) {
+          console.error("Backend compare failed:", backendError);
+        }
+      }
 
       const localCompare = JSON.parse(localStorage.getItem("compare") || "[]");
 
-      if (localCompare.length > 0) {
+      if (Array.isArray(localCompare) && localCompare.length > 0) {
         setProducts(localCompare.slice(0, 3));
         return;
       }
 
-      const res = await fetch(`${API_URL}/products`);
-      const data = await res.json();
-
-      const productList = data.products || data.data || data || [];
-      setProducts(productList.slice(0, 3));
+      setProducts([]);
     } catch (error) {
       console.error("Error fetching compare products:", error);
+      setError("Compare products could not be loaded.");
       setProducts([]);
     } finally {
       setLoading(false);
     }
   }
 
-  function removeFromCompare(productId) {
-    const updatedProducts = products.filter(
-      (product) => (product._id || product.id) !== productId
-    );
+  async function removeFromCompare(productId) {
+    const token = localStorage.getItem("token");
 
-    setProducts(updatedProducts);
-    localStorage.setItem("compare", JSON.stringify(updatedProducts));
+    setProducts((currentProducts) => {
+      const updatedProducts = currentProducts.filter(
+        (product) => String(getProductId(product)) !== String(productId)
+      );
+
+      localStorage.setItem("compare", JSON.stringify(updatedProducts));
+      return updatedProducts;
+    });
+
+    if (!token) return;
+
+    try {
+      await fetch(`${API_URL}/compare/${productId}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+    } catch (error) {
+      console.error("Error removing compare product:", error);
+    }
+  }
+
+  async function handleAddToCart(product) {
+    const productId = getProductId(product);
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      const oldCart = JSON.parse(localStorage.getItem("cart") || "[]");
+
+      const existing = oldCart.find(
+        (item) => String(getProductId(item)) === String(productId)
+      );
+
+      let newCart;
+
+      if (existing) {
+        newCart = oldCart.map((item) =>
+          String(getProductId(item)) === String(productId)
+            ? { ...item, quantity: Number(item.quantity || 1) + 1 }
+            : item
+        );
+      } else {
+        newCart = [...oldCart, { ...product, quantity: 1 }];
+      }
+
+      localStorage.setItem("cart", JSON.stringify(newCart));
+      alert("Product added to cart");
+      return;
+    }
+
+    try {
+      setActionLoadingId(productId);
+
+      const res = await fetch(`${API_URL}/cart/items`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          product_id: productId,
+          productId,
+          quantity: 1,
+        }),
+      });
+
+      if (!res.ok) {
+        throw new Error("Failed to add product to cart");
+      }
+
+      alert("Product added to cart");
+    } catch (error) {
+      console.error("Error adding to cart:", error);
+      alert("Could not add product to cart");
+    } finally {
+      setActionLoadingId(null);
+    }
+  }
+
+  async function handleAddToWishlist(product) {
+    const productId = getProductId(product);
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      addToLocalStorageList("wishlist", product);
+      alert("Product added to wishlist");
+      return;
+    }
+
+    try {
+      setActionLoadingId(productId);
+
+      const res = await fetch(`${API_URL}/wishlist`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          product_id: productId,
+          productId,
+        }),
+      });
+
+      if (!res.ok) {
+        throw new Error("Failed to add product to wishlist");
+      }
+
+      alert("Product added to wishlist");
+    } catch (error) {
+      console.error("Error adding to wishlist:", error);
+      addToLocalStorageList("wishlist", product);
+      alert("Product added to wishlist");
+    } finally {
+      setActionLoadingId(null);
+    }
   }
 
   const toggleCart = () => {
-    setCartOpen((v) => !v);
+    setCartOpen((value) => !value);
     setWishlistOpen(false);
     setAccountOpen(false);
   };
 
   const toggleWishlist = () => {
-    setWishlistOpen((v) => !v);
+    setWishlistOpen((value) => !value);
     setCartOpen(false);
     setAccountOpen(false);
   };
 
   const toggleAccount = () => {
-    setAccountOpen((v) => !v);
+    setAccountOpen((value) => !value);
     setCartOpen(false);
     setWishlistOpen(false);
   };
@@ -157,14 +355,26 @@ export default function ComparePage() {
           <div className="text-center text-gray-500 py-20">
             Loading compare products...
           </div>
+        ) : error ? (
+          <div className="max-w-5xl mx-auto border border-red-200 bg-red-50 p-10 text-center">
+            <h2 className="text-xl font-semibold text-red-600">{error}</h2>
+          </div>
         ) : products.length === 0 ? (
           <div className="max-w-5xl mx-auto border border-gray-200 bg-white p-10 text-center">
             <h2 className="text-xl font-semibold text-gray-900">
               No products to compare.
             </h2>
+
             <p className="mt-2 text-sm text-gray-500">
               Add products to compare and they will appear here.
             </p>
+
+            <Link
+              to="/shop"
+              className="mt-5 inline-block bg-orange-500 px-6 py-3 text-sm font-semibold text-white hover:bg-orange-600"
+            >
+              GO TO SHOP
+            </Link>
           </div>
         ) : (
           <div className="max-w-5xl mx-auto border border-gray-200 overflow-x-auto">
@@ -177,7 +387,8 @@ export default function ComparePage() {
               <div className="border-r border-gray-200" />
 
               {products.map((product) => {
-                const productId = product._id || product.id;
+                const productId = getProductId(product);
+                const isOutOfStock = getStockStatus(product) === "OUT OF STOCK";
 
                 return (
                   <div
@@ -185,38 +396,53 @@ export default function ComparePage() {
                     className="relative border-r border-gray-200 p-6"
                   >
                     <button
+                      type="button"
                       onClick={() => removeFromCompare(productId)}
                       className="absolute top-5 left-1/2 -translate-x-1/2 text-gray-400 hover:text-red-500"
+                      title="Remove from compare"
                     >
                       <X size={16} />
                     </button>
 
-                    <div className="h-52 mt-8 flex items-center justify-center">
+                    <Link
+                      to={`/products/${product.slug || productId}`}
+                      className="h-52 mt-8 flex items-center justify-center"
+                    >
                       <img
-                        src={getImageUrl(product.image || product.images?.[0])}
+                        src={getImageUrl(getProductImage(product))}
                         alt={product.name}
                         className="max-h-full object-contain"
                       />
-                    </div>
+                    </Link>
 
-                    <h3 className="text-sm text-gray-900 leading-5 min-h-[60px] mt-4">
-                      {product.name}
-                    </h3>
+                    <Link to={`/products/${product.slug || productId}`}>
+                      <h3 className="text-sm text-gray-900 leading-5 min-h-[60px] mt-4 hover:text-orange-500">
+                        {product.name}
+                      </h3>
+                    </Link>
 
                     <div className="flex gap-2 mt-4">
                       <button
-                        disabled={getStockStatus(product) === "OUT OF STOCK"}
+                        type="button"
+                        disabled={isOutOfStock || actionLoadingId === productId}
+                        onClick={() => handleAddToCart(product)}
                         className={`h-10 flex-1 text-xs font-semibold text-white flex items-center justify-center gap-2 ${
-                          getStockStatus(product) === "OUT OF STOCK"
+                          isOutOfStock
                             ? "bg-gray-400 cursor-not-allowed"
                             : "bg-orange-500 hover:bg-orange-600"
-                        }`}
+                        } disabled:opacity-60`}
                       >
                         ADD TO CART
                         <ShoppingCart size={15} />
                       </button>
 
-                      <button className="w-10 h-10 border border-orange-200 text-orange-500 flex items-center justify-center hover:bg-orange-50">
+                      <button
+                        type="button"
+                        disabled={actionLoadingId === productId}
+                        onClick={() => handleAddToWishlist(product)}
+                        className="w-10 h-10 border border-orange-200 text-orange-500 flex items-center justify-center hover:bg-orange-50 disabled:opacity-60"
+                        title="Add to wishlist"
+                      >
                         <Heart size={16} />
                       </button>
                     </div>
@@ -226,41 +452,51 @@ export default function ComparePage() {
             </div>
 
             <CompareRow label="Customer feedback:" products={products}>
-              {products.map((product) => (
-                <div
-                  key={product._id || product.id}
-                  className="flex items-center gap-1"
-                >
-                  <div className="flex text-orange-400">
-                    {[1, 2, 3, 4, 5].map((star) => (
-                      <Star
-                        key={star}
-                        size={13}
-                        fill={star <= Math.round(getRating(product)) ? "currentColor" : "none"}
-                      />
-                    ))}
+              {products.map((product) => {
+                const rating = getRating(product);
+
+                return (
+                  <div
+                    key={getProductId(product)}
+                    className="flex items-center gap-1"
+                  >
+                    <div className="flex text-orange-400">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <Star
+                          key={star}
+                          size={13}
+                          fill={star <= Math.round(rating || 5) ? "currentColor" : "none"}
+                        />
+                      ))}
+                    </div>
+
+                    <span className="text-xs text-gray-500">
+                      ({getReviewCount(product)})
+                    </span>
                   </div>
-                  <span className="text-xs text-gray-500">
-                    ({getReviewCount(product)})
-                  </span>
-                </div>
-              ))}
+                );
+              })}
             </CompareRow>
 
             <CompareRow label="Price:" products={products}>
               {products.map((product) => (
                 <p
-                  key={product._id || product.id}
+                  key={getProductId(product)}
                   className="text-lg font-semibold text-blue-500"
                 >
-                  {formatPrice(product.salePrice || product.price)}
+                  {formatPrice(
+                    product.salePrice ||
+                      product.sale_price ||
+                      product.discount_price ||
+                      product.price
+                  )}
                 </p>
               ))}
             </CompareRow>
 
             <CompareRow label="Sold by:" products={products}>
               {products.map((product) => (
-                <p key={product._id || product.id}>
+                <p key={getProductId(product)}>
                   {product.soldBy || product.vendor || getBrand(product)}
                 </p>
               ))}
@@ -268,20 +504,20 @@ export default function ComparePage() {
 
             <CompareRow label="Brand:" products={products}>
               {products.map((product) => (
-                <p key={product._id || product.id}>{getBrand(product)}</p>
+                <p key={getProductId(product)}>{getBrand(product)}</p>
               ))}
             </CompareRow>
 
             <CompareRow label="Model:" products={products}>
               {products.map((product) => (
-                <p key={product._id || product.id}>{getModel(product)}</p>
+                <p key={getProductId(product)}>{getModel(product)}</p>
               ))}
             </CompareRow>
 
             <CompareRow label="Stock status:" products={products}>
               {products.map((product) => (
                 <p
-                  key={product._id || product.id}
+                  key={getProductId(product)}
                   className={`font-semibold ${getStockColor(product)}`}
                 >
                   {getStockStatus(product)}
@@ -291,38 +527,37 @@ export default function ComparePage() {
 
             <CompareRow label="Category:" products={products}>
               {products.map((product) => (
-                <p key={product._id || product.id}>
-                  {product.category?.name || product.category || "N/A"}
-                </p>
+                <p key={getProductId(product)}>{getCategory(product)}</p>
               ))}
             </CompareRow>
 
             <CompareRow label="SKU:" products={products}>
               {products.map((product) => (
-                <p key={product._id || product.id}>{product.sku || "N/A"}</p>
+                <p key={getProductId(product)}>{product.sku || "N/A"}</p>
               ))}
             </CompareRow>
 
             <CompareRow label="Size:" products={products}>
               {products.map((product) => (
-                <p key={product._id || product.id}>
-                  {product.size || product.sizes?.[0] || "N/A"}
+                <p key={getProductId(product)}>
+                  {product.size ||
+                    product.sizes?.[0] ||
+                    product.variants?.[0]?.size ||
+                    "N/A"}
                 </p>
               ))}
             </CompareRow>
 
             <CompareRow label="Weight:" products={products}>
               {products.map((product) => (
-                <p key={product._id || product.id}>
-                  {product.weight || "N/A"}
-                </p>
+                <p key={getProductId(product)}>{product.weight || "N/A"}</p>
               ))}
             </CompareRow>
 
             <CompareRow label="Description:" products={products}>
               {products.map((product) => (
                 <p
-                  key={product._id || product.id}
+                  key={getProductId(product)}
                   className="text-xs leading-5 text-gray-600"
                 >
                   {product.description || "No description available."}
@@ -339,6 +574,8 @@ export default function ComparePage() {
 }
 
 function CompareRow({ label, children, products }) {
+  const childrenArray = Children.toArray(children);
+
   return (
     <div
       className="grid min-w-[900px] text-sm"
@@ -350,7 +587,7 @@ function CompareRow({ label, children, products }) {
         {label}
       </div>
 
-      {children.map((child, index) => (
+      {childrenArray.map((child, index) => (
         <div
           key={index}
           className="border-r border-t border-gray-200 px-5 py-3 text-gray-800"
