@@ -1,10 +1,8 @@
-const router = require('express').Router();
-const ctrl = require('../controllers/user.controller');
-const { auth } = require('../middleware/auth.middleware');
-router.get('/me', auth, ctrl.getProfile);
-router.put('/me', auth, ctrl.updateProfile);
-router.get('/me/addresses', auth, ctrl.getAddresses);
-router.post('/me/addresses', auth, ctrl.addAddress);
-router.put('/me/addresses/:id', auth, ctrl.updateAddress);
-router.delete('/me/addresses/:id', auth, ctrl.deleteAddress);
+const router = require("express").Router();
+const ctrl = require("../controllers/user.controller");
+const { auth } = require("../middleware/auth.middleware");
+
+router.get("/me", auth, ctrl.getProfile);
+router.get("/dashboard", auth, ctrl.getDashboard);
+
 module.exports = router;

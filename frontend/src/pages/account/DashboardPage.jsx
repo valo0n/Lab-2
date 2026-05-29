@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import {
   Layers,
@@ -24,8 +24,8 @@ import TopBar from "../../components/Layout/TopBar";
 import Header from "../../components/Layout/Header";
 import Navigation from "../../components/Layout/Navigation";
 import Footer from "../../components/Layout/Footer";
-import { useCart } from "../../context/CartContext";
-import { useWishlist } from "../../context/WishlistContext";
+import { userService } from "../../services/userService";
+import { authService } from "../../services/authService";
 
 const sidebarItems = [
   { name: "Dashboard", icon: Layers, path: "/dashboard" },
@@ -40,51 +40,7 @@ const sidebarItems = [
   { name: "Log-out", icon: LogOut, path: "/signin" },
 ];
 
-const recentOrders = [
-  {
-    id: "#96459761",
-    status: "IN PROGRESS",
-    date: "Dec 30, 2019 05:18",
-    total: "$1,500 (5 Products)",
-  },
-  {
-    id: "#71667167",
-    status: "COMPLETED",
-    date: "Feb 2, 2019 19:28",
-    total: "$80 (11 Products)",
-  },
-  {
-    id: "#95214362",
-    status: "CANCELED",
-    date: "Mar 20, 2019 23:14",
-    total: "$160 (3 Products)",
-  },
-  {
-    id: "#71667167",
-    status: "COMPLETED",
-    date: "Feb 2, 2019 19:28",
-    total: "$80 (1 Products)",
-  },
-  {
-    id: "#51746385",
-    status: "COMPLETED",
-    date: "Feb 2, 2019 19:28",
-    total: "$2,300 (2 Products)",
-  },
-  {
-    id: "#51746385",
-    status: "CANCELED",
-    date: "Dec 30, 2019 07:52",
-    total: "$70 (1 Products)",
-  },
-  {
-    id: "#673971743",
-    status: "COMPLETED",
-    date: "Dec 7, 2019 23:26",
-    total: "$220 (1 Products)",
-  },
-];
-
+// Browsing history mbetet statike (do lidhet me MongoDB me vone)
 const browsingHistory = [
   {
     name: "TOZO T6 True Wireless Earbuds Bluetooth Headphon...",
@@ -123,8 +79,10 @@ const browsingHistory = [
 function StatusBadge({ status }) {
   const colors = {
     "IN PROGRESS": "text-warning",
+    PENDING: "text-warning",
     COMPLETED: "text-success",
     CANCELED: "text-danger",
+    CANCELLED: "text-danger",
   };
   return (
     <span
@@ -135,12 +93,57 @@ function StatusBadge({ status }) {
   );
 }
 
+function formatDate(dateStr) {
+  if (!dateStr) return "";
+  const d = new Date(dateStr);
+  return d.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
+}
+
 export default function DashboardPage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
   const [wishlistOpen, setWishlistOpen] = useState(false);
   const [accountOpen, setAccountOpen] = useState(false);
   const [cardMenuOpen, setCardMenuOpen] = useState(null);
+
+  // Backend data
+  const [dashboardData, setDashboardData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const currentUser = authService.getCurrentUser();
+
+  useEffect(() => {
+    const fetchDashboard = async () => {
+      try {
+        setLoading(true);
+        const result = await userService.getDashboard();
+        setDashboardData(result.data);
+      } catch (err) {
+        console.error("Failed to fetch dashboard:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchDashboard();
+  }, []);
+
+  // Fallback values nese s'ka te dhena
+  const user = dashboardData?.user || {};
+  const stats = dashboardData?.stats || { total: 0, pending: 0, completed: 0 };
+  const recentOrders = dashboardData?.recentOrders || [];
+  const cards = dashboardData?.cards || [];
+
+  const displayName = currentUser?.name || user.name || "User";
+  const displayEmail = currentUser?.email || user.email || "";
+  const initials = displayName
+    .split(" ")
+    .map((w) => w.charAt(0))
+    .join("")
+    .toUpperCase()
+    .slice(0, 2);
 
   const toggleCart = () => {
     setCartOpen((v) => !v);
@@ -218,7 +221,9 @@ export default function DashboardPage() {
           {/* Main content */}
           <div>
             {/* Greeting */}
-            <h1 className="text-2xl font-bold text-dark mb-2">Hello, Kevin</h1>
+            <h1 className="text-2xl font-bold text-dark mb-2">
+              Hello, {displayName}
+            </h1>
             <p className="text-sm text-dark-300 mb-6 leading-relaxed">
               From your account dashboard. you can easily check & view your{" "}
               <span className="text-info">Recent Orders</span>, manage your{" "}
@@ -239,32 +244,33 @@ export default function DashboardPage() {
                 <div className="p-5">
                   <div className="flex items-center gap-3 mb-4">
                     <div className="w-12 h-12 bg-primary-50 rounded-full flex items-center justify-center text-primary font-bold">
-                      KG
+                      {initials}
                     </div>
                     <div>
-                      <h4 className="font-bold text-dark">Kevin Gilbert</h4>
+                      <h4 className="font-bold text-dark">{displayName}</h4>
                       <p className="text-xs text-dark-300">
-                        Dhaka -1207, Bangladesh
+                        {user.city || user.country
+                          ? `${user.city || ""}${user.city && user.country ? ", " : ""}${user.country || ""}`
+                          : "—"}
                       </p>
                     </div>
                   </div>
                   <div className="space-y-2 text-xs">
                     <p>
                       <span className="text-dark-300">Email:</span>{" "}
-                      <span className="text-dark">kevin.gilbert@gmail.com</span>
-                    </p>
-                    <p>
-                      <span className="text-dark-300">Sec Email:</span>{" "}
-                      <span className="text-dark">kevin12345@gmail.com</span>
+                      <span className="text-dark">{displayEmail}</span>
                     </p>
                     <p>
                       <span className="text-dark-300">Phone:</span>{" "}
-                      <span className="text-dark">+1-202-555-0118</span>
+                      <span className="text-dark">{user.phone || "—"}</span>
                     </p>
                   </div>
-                  <button className="mt-4 text-info text-xs font-bold uppercase tracking-wide hover:underline">
+                  <Link
+                    to="/settings"
+                    className="inline-block mt-4 text-info text-xs font-bold uppercase tracking-wide hover:underline"
+                  >
                     EDIT ACCOUNT
-                  </button>
+                  </Link>
                 </div>
               </div>
 
@@ -276,27 +282,29 @@ export default function DashboardPage() {
                   </h3>
                 </div>
                 <div className="p-5">
-                  <h4 className="font-bold text-dark mb-2">Kevin Gilbert</h4>
+                  <h4 className="font-bold text-dark mb-2">{displayName}</h4>
                   <p className="text-xs text-dark-300 mb-4 leading-relaxed">
-                    East Tejturi Bazar, Word No. 04, Road No.
-                    <br />
-                    13/x, House no. 1320/C, Flat No. 5D,
-                    <br />
-                    Dhaka -1200, Bangladesh
+                    {user.addresses && user.addresses.length > 0
+                      ? user.addresses[0].street ||
+                        `${user.addresses[0].city || ""}, ${user.addresses[0].country || ""}`
+                      : "Ende s'ka adrese te ruajtur"}
                   </p>
                   <div className="space-y-2 text-xs mb-4">
                     <p>
                       <span className="text-dark-300">Phone Number:</span>{" "}
-                      <span className="text-dark">+1-202-555-0118</span>
+                      <span className="text-dark">{user.phone || "—"}</span>
                     </p>
                     <p>
                       <span className="text-dark-300">Email:</span>{" "}
-                      <span className="text-dark">kevin.gilbert@gmail.com</span>
+                      <span className="text-dark">{displayEmail}</span>
                     </p>
                   </div>
-                  <button className="text-info text-xs font-bold uppercase tracking-wide hover:underline">
+                  <Link
+                    to="/cards-address"
+                    className="inline-block text-info text-xs font-bold uppercase tracking-wide hover:underline"
+                  >
                     EDIT ADDRESS
-                  </button>
+                  </Link>
                 </div>
               </div>
 
@@ -307,7 +315,9 @@ export default function DashboardPage() {
                     <Rocket size={20} />
                   </div>
                   <div>
-                    <div className="text-2xl font-bold text-dark">154</div>
+                    <div className="text-2xl font-bold text-dark">
+                      {stats.total}
+                    </div>
                     <p className="text-xs text-dark-300">Total Orders</p>
                   </div>
                 </div>
@@ -316,7 +326,9 @@ export default function DashboardPage() {
                     <FileText size={20} />
                   </div>
                   <div>
-                    <div className="text-2xl font-bold text-dark">05</div>
+                    <div className="text-2xl font-bold text-dark">
+                      {String(stats.pending).padStart(2, "0")}
+                    </div>
                     <p className="text-xs text-dark-300">Pending Orders</p>
                   </div>
                 </div>
@@ -325,7 +337,9 @@ export default function DashboardPage() {
                     <Package size={20} />
                   </div>
                   <div>
-                    <div className="text-2xl font-bold text-dark">149</div>
+                    <div className="text-2xl font-bold text-dark">
+                      {stats.completed}
+                    </div>
                     <p className="text-xs text-dark-300">Completed Orders</p>
                   </div>
                 </div>
@@ -338,69 +352,87 @@ export default function DashboardPage() {
                 <h3 className="text-xs font-bold text-dark-300 tracking-wider">
                   PAYMENT OPTION
                 </h3>
-                <button className="text-primary text-xs font-bold uppercase tracking-wide hover:underline flex items-center gap-1">
+                <Link
+                  to="/cards-address"
+                  className="text-primary text-xs font-bold uppercase tracking-wide hover:underline flex items-center gap-1"
+                >
                   Add Card →
-                </button>
+                </Link>
               </div>
               <div className="p-5 grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* Visa Card */}
-                <div className="bg-gradient-to-br from-blue-700 to-blue-900 rounded-lg p-5 text-white relative">
-                  <div className="flex items-start justify-between mb-6">
-                    <div>
-                      <p className="text-xl font-bold">$95, 400.00 USD</p>
-                    </div>
-                    <div className="relative">
-                      <button
-                        onClick={() =>
-                          setCardMenuOpen(cardMenuOpen === 1 ? null : 1)
-                        }
-                      >
-                        <MoreHorizontal size={20} />
-                      </button>
-                      {cardMenuOpen === 1 && (
-                        <div className="absolute right-0 top-6 bg-white text-dark rounded shadow-lg w-32 z-10">
-                          <button className="flex items-center gap-2 w-full px-3 py-2 text-xs hover:bg-gray-50 text-left">
-                            <Edit2 size={12} /> Edit Card
-                          </button>
-                          <button className="flex items-center gap-2 w-full px-3 py-2 text-xs hover:bg-gray-50 text-left text-danger">
-                            <Trash2 size={12} /> Delete Card
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                  <p className="text-xs text-blue-200 mb-1">CARD NUMBER</p>
-                  <p className="font-mono text-sm mb-6">**** **** **** 3814</p>
-                  <div className="flex items-end justify-between">
-                    <span className="font-bold italic text-lg">VISA</span>
-                    <span className="text-sm">Kevin Gilbert</span>
-                  </div>
-                </div>
-
-                {/* Mastercard */}
-                <div className="bg-gradient-to-br from-green-500 to-green-700 rounded-lg p-5 text-white relative">
-                  <div className="flex items-start justify-between mb-6">
-                    <div>
-                      <p className="text-xl font-bold">$87, 583.00 USD</p>
-                    </div>
-                    <button
-                      onClick={() =>
-                        setCardMenuOpen(cardMenuOpen === 2 ? null : 2)
-                      }
+                {cards.length === 0 ? (
+                  <div className="md:col-span-2 text-center py-8 text-dark-300 text-sm">
+                    Ende s'ka karta te ruajtura.{" "}
+                    <Link
+                      to="/cards-address"
+                      className="text-primary hover:underline"
                     >
-                      <MoreHorizontal size={20} />
-                    </button>
+                      Shto nje karte
+                    </Link>
                   </div>
-                  <p className="text-xs text-green-100 mb-1">CARD NUMBER</p>
-                  <p className="font-mono text-sm mb-6">**** **** **** 1761</p>
-                  <div className="flex items-end justify-between">
-                    <div className="flex gap-0">
-                      <div className="w-6 h-6 bg-red-500 rounded-full"></div>
-                      <div className="w-6 h-6 bg-orange-400 rounded-full -ml-2 opacity-90"></div>
-                    </div>
-                    <span className="text-sm">Kevin Gilbert</span>
-                  </div>
-                </div>
+                ) : (
+                  cards.map((card, i) => {
+                    const isVisa = card.brand === "visa";
+                    return (
+                      <div
+                        key={card.card_id || i}
+                        className={`rounded-lg p-5 text-white relative ${
+                          isVisa
+                            ? "bg-gradient-to-br from-blue-700 to-blue-900"
+                            : "bg-gradient-to-br from-green-500 to-green-700"
+                        }`}
+                      >
+                        <div className="flex items-start justify-between mb-6">
+                          <div>
+                            <p className="text-xl font-bold">
+                              {card.holder_name}
+                            </p>
+                          </div>
+                          <div className="relative">
+                            <button
+                              onClick={() =>
+                                setCardMenuOpen(cardMenuOpen === i ? null : i)
+                              }
+                            >
+                              <MoreHorizontal size={20} />
+                            </button>
+                            {cardMenuOpen === i && (
+                              <div className="absolute right-0 top-6 bg-white text-dark rounded shadow-lg w-32 z-10">
+                                <button className="flex items-center gap-2 w-full px-3 py-2 text-xs hover:bg-gray-50 text-left">
+                                  <Edit2 size={12} /> Edit Card
+                                </button>
+                                <button className="flex items-center gap-2 w-full px-3 py-2 text-xs hover:bg-gray-50 text-left text-danger">
+                                  <Trash2 size={12} /> Delete Card
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                        <p
+                          className={`text-xs mb-1 ${isVisa ? "text-blue-200" : "text-green-100"}`}
+                        >
+                          CARD NUMBER
+                        </p>
+                        <p className="font-mono text-sm mb-6">
+                          **** **** **** {card.last_four}
+                        </p>
+                        <div className="flex items-end justify-between">
+                          {isVisa ? (
+                            <span className="font-bold italic text-lg">
+                              VISA
+                            </span>
+                          ) : (
+                            <div className="flex gap-0">
+                              <div className="w-6 h-6 bg-red-500 rounded-full"></div>
+                              <div className="w-6 h-6 bg-orange-400 rounded-full -ml-2 opacity-90"></div>
+                            </div>
+                          )}
+                          <span className="text-sm">{card.holder_name}</span>
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
               </div>
             </div>
 
@@ -429,26 +461,39 @@ export default function DashboardPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {recentOrders.map((order, i) => (
-                      <tr key={i} className="border-t border-gray-100">
-                        <td className="px-5 py-4 text-dark">{order.id}</td>
-                        <td className="px-5 py-4">
-                          <StatusBadge status={order.status} />
-                        </td>
-                        <td className="px-5 py-4 text-dark-300">
-                          {order.date}
-                        </td>
-                        <td className="px-5 py-4 text-dark">{order.total}</td>
-                        <td className="px-5 py-4">
-                          <Link
-                            to="/order-details"
-                            className="text-info text-xs font-medium hover:underline"
-                          >
-                            View Details →
-                          </Link>
+                    {recentOrders.length === 0 ? (
+                      <tr>
+                        <td
+                          colSpan="5"
+                          className="px-5 py-8 text-center text-dark-300"
+                        >
+                          {loading ? "Duke ngarkuar..." : "Ende s'ka porosi"}
                         </td>
                       </tr>
-                    ))}
+                    ) : (
+                      recentOrders.map((order, i) => (
+                        <tr key={i} className="border-t border-gray-100">
+                          <td className="px-5 py-4 text-dark">{order.id}</td>
+                          <td className="px-5 py-4">
+                            <StatusBadge status={order.status} />
+                          </td>
+                          <td className="px-5 py-4 text-dark-300">
+                            {formatDate(order.date)}
+                          </td>
+                          <td className="px-5 py-4 text-dark">
+                            ${order.total} ({order.productCount} Products)
+                          </td>
+                          <td className="px-5 py-4">
+                            <Link
+                              to="/order-details"
+                              className="text-info text-xs font-medium hover:underline"
+                            >
+                              View Details →
+                            </Link>
+                          </td>
+                        </tr>
+                      ))
+                    )}
                   </tbody>
                 </table>
               </div>
@@ -460,9 +505,12 @@ export default function DashboardPage() {
                 <h3 className="text-xs font-bold text-dark-300 tracking-wider">
                   BROWSING HISTORY
                 </h3>
-                <button className="text-primary text-xs font-bold uppercase tracking-wide hover:underline">
+                <Link
+                  to="/browsing-history"
+                  className="text-primary text-xs font-bold uppercase tracking-wide hover:underline"
+                >
                   View All →
-                </button>
+                </Link>
               </div>
               <div className="p-5 grid grid-cols-2 md:grid-cols-4 gap-4">
                 {browsingHistory.map((item, i) => (
