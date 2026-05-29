@@ -6,14 +6,32 @@ module.exports = {
   // POST /api/auth/register
   register: async (req, res, next) => {
     try {
-      const { name, email, password } = req.body;
+      const { name, first_name, last_name, email, password } = req.body;
 
-      // Check nëse ekziston
+      // Lejojme ose "name" te plote ose first_name + last_name
+      let fName = first_name;
+      let lName = last_name;
+      if (!fName && name) {
+        const parts = name.trim().split(" ");
+        fName = parts[0];
+        lName = parts.slice(1).join(" ") || "-";
+      }
+
+      if (!email || !password) {
+        return res
+          .status(400)
+          .json({
+            success: false,
+            message: "Email dhe password jane te detyrueshme",
+          });
+      }
+
+      // Check nese ekziston
       const existing = await prisma.user.findUnique({ where: { email } });
       if (existing) {
         return res
           .status(400)
-          .json({ success: false, message: "Email tashmë ekziston" });
+          .json({ success: false, message: "Email tashme ekziston" });
       }
 
       // Hash password
@@ -22,9 +40,11 @@ module.exports = {
       // Krijo user
       const user = await prisma.user.create({
         data: {
-          name,
+          first_name: fName || "User",
+          last_name: lName || "-",
           email,
-          password: hashedPassword,
+          password_hash: hashedPassword,
+          is_active: true,
         },
       });
 
@@ -44,7 +64,11 @@ module.exports = {
         success: true,
         message: "Llogaria u krijua me sukses",
         data: {
-          user: { id: user.id, name: user.name, email: user.email },
+          user: {
+            id: user.id,
+            name: `${user.first_name} ${user.last_name}`,
+            email: user.email,
+          },
           token,
         },
       });
@@ -63,7 +87,7 @@ module.exports = {
           .status(400)
           .json({
             success: false,
-            message: "Email dhe password janë të detyrueshme",
+            message: "Email dhe password jane te detyrueshme",
           });
       }
 
@@ -71,9 +95,7 @@ module.exports = {
       const user = await prisma.user.findUnique({
         where: { email },
         include: {
-          user_roles: {
-            include: { role: true },
-          },
+          user_roles: { include: { role: true } },
         },
       });
 
@@ -83,8 +105,8 @@ module.exports = {
           .json({ success: false, message: "Email ose password gabim" });
       }
 
-      // Kontrollo password
-      const isMatch = await bcrypt.compare(password, user.password);
+      // Kontrollo password (fusha eshte password_hash)
+      const isMatch = await bcrypt.compare(password, user.password_hash);
       if (!isMatch) {
         return res
           .status(401)
@@ -107,7 +129,7 @@ module.exports = {
         data: {
           user: {
             id: user.id,
-            name: user.name,
+            name: `${user.first_name} ${user.last_name}`,
             email: user.email,
             roles,
           },
