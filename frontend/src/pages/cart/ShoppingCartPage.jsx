@@ -9,11 +9,19 @@ const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 const SERVER_URL = API_URL.replace("/api", "");
 
 function getProductId(item) {
-  return item?._id || item?.id || item?.product_id || item?.productId || item?.product?.id;
+  return (
+    item?._id ||
+    item?.id ||
+    item?.product_id ||
+    item?.productId ||
+    item?.product?.id
+  );
 }
 
 function getCartItemId(item) {
-  return item?.cart_item_id || item?.cartItemId || item?.id || getProductId(item);
+  return (
+    item?.cart_item_id || item?.cartItemId || item?.id || getProductId(item)
+  );
 }
 
 function getProduct(item) {
@@ -66,7 +74,7 @@ function getPrice(item) {
       product?.sale_price ||
       product?.discount_price ||
       product?.price ||
-      0
+      0,
   );
 }
 
@@ -74,10 +82,7 @@ function getOldPrice(item) {
   const product = getProduct(item);
 
   return Number(
-    product?.oldPrice ||
-      product?.old_price ||
-      product?.compare_at_price ||
-      0
+    product?.oldPrice || product?.old_price || product?.compare_at_price || 0,
   );
 }
 
@@ -159,11 +164,7 @@ export default function ShoppingCartPage() {
           if (res.ok) {
             const data = await res.json();
             const backendItems =
-              data.data?.items ||
-              data.data ||
-              data.items ||
-              data.cart ||
-              [];
+              data.data?.items || data.data || data.items || data.cart || [];
 
             setCartItems(normalizeCartItems(backendItems));
             return;
@@ -200,7 +201,7 @@ export default function ShoppingCartPage() {
     const updatedItems = cartItems.map((cartItem) =>
       String(getProductId(cartItem)) === String(productId)
         ? { ...cartItem, quantity: newQuantity }
-        : cartItem
+        : cartItem,
     );
 
     setCartItems(updatedItems);
@@ -230,7 +231,7 @@ export default function ShoppingCartPage() {
     const cartItemId = getCartItemId(item);
 
     const updatedItems = cartItems.filter(
-      (cartItem) => String(getProductId(cartItem)) !== String(productId)
+      (cartItem) => String(getProductId(cartItem)) !== String(productId),
     );
 
     setCartItems(updatedItems);
@@ -334,7 +335,7 @@ export default function ShoppingCartPage() {
     const taxValue = subtotalValue * 0.18;
     const totalValue = Math.max(
       0,
-      subtotalValue + shippingValue + taxValue - discountValue
+      subtotalValue + shippingValue + taxValue - discountValue,
     );
 
     return {
@@ -425,7 +426,7 @@ export default function ShoppingCartPage() {
                 <p className="text-sm text-gray-500">Your cart is empty.</p>
 
                 <Link
-                  to="/shop"
+                  to="/shop-page"
                   className="mt-4 inline-flex items-center justify-center rounded-sm bg-orange-500 px-5 py-3 text-xs font-semibold uppercase tracking-wide text-white hover:bg-orange-600"
                 >
                   Go to shop
@@ -456,7 +457,9 @@ export default function ShoppingCartPage() {
 
                       <Link to={`/products/${item.slug || productId}`}>
                         <img
-                          src={getImageUrl(item.image || getProductImage(product))}
+                          src={getImageUrl(
+                            item.image || getProductImage(product),
+                          )}
                           alt={item.name}
                           className="h-20 w-20 rounded object-contain"
                         />
@@ -523,7 +526,7 @@ export default function ShoppingCartPage() {
 
             <div className="flex flex-col gap-4 px-6 py-5 sm:flex-row sm:items-center sm:justify-between">
               <Link
-                to="/shop"
+                to="/shop-page"
                 className="inline-flex items-center justify-center gap-2 rounded-sm border border-sky-500 px-5 py-3 text-xs font-semibold uppercase tracking-wide text-sky-600 hover:bg-sky-50"
               >
                 ← Return to shop

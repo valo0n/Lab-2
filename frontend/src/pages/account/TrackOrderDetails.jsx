@@ -27,7 +27,8 @@ export default function TrackOrderDetails() {
     {
       icon: User,
       color: "blue",
-      title: "Our delivery man (John Wick) Has picked-up your order for delivery.",
+      title:
+        "Our delivery man (John Wick) Has picked-up your order for delivery.",
       date: "23 Jan, 2021 at 2:00 PM",
     },
     {
