@@ -1,13 +1,212 @@
-// order Controller — handles HTTP requests
-// Pattern: req → controller → service → repository → response
-// TODO: Implement each method
+const { prisma } = require("../config/database");
+
+// Helper — gjeneron numer porosie unik
+function generateOrderNumber() {
+  return Math.floor(10000000 + Math.random() * 90000000).toString();
+}
 
 module.exports = {
-    create: async (req, res, next) => { res.json({ message: 'TODO' }); },
-    getMyOrders: async (req, res, next) => { res.json({ message: 'TODO' }); },
-    trackOrder: async (req, res, next) => { res.json({ message: 'TODO' }); },
-    getById: async (req, res, next) => { res.json({ message: 'TODO' }); },
-    getAllOrders: async (req, res, next) => { res.json({ message: 'TODO' }); },
-    updateStatus: async (req, res, next) => { res.json({ message: 'TODO' }); },
-    addTracking: async (req, res, next) => { res.json({ message: 'TODO' }); }
+  // POST /api/orders — krijo porosi te re
+  create: async (req, res, next) => {
+    try {
+      const userId = req.user.id;
+      const {
+        items,
+        subtotal,
+        shipping_cost = 0,
+        discount = 0,
+        tax = 0,
+        total,
+        shipping_address_id,
+        billing_address_id,
+        payment_method,
+        notes,
+      } = req.body;
+
+      if (!items || items.length === 0) {
+        return res
+          .status(400)
+          .json({ success: false, message: "Porosia s'ka produkte" });
+      }
+
+      const order = await prisma.order.create({
+        data: {
+          user_id: userId,
+          order_number: generateOrderNumber(),
+          status: "pending",
+          subtotal: subtotal || total,
+          shipping_cost,
+          discount,
+          tax,
+          total,
+          shipping_address_id: shipping_address_id || null,
+          billing_address_id: billing_address_id || null,
+          payment_method: payment_method || null,
+          notes: notes || null,
+          created_by: userId,
+          items: {
+            create: items.map((it) => ({
+              product_id: it.product_id,
+              product_name: it.product_name,
+              quantity: it.quantity,
+              unit_price: it.unit_price,
+              total_price: it.unit_price * it.quantity,
+            })),
+          },
+        },
+        include: { items: true },
+      });
+
+      res.status(201).json({ success: true, data: order });
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  // GET /api/orders — porosite e userit te loguar
+  getMyOrders: async (req, res, next) => {
+    try {
+      const userId = req.user.id;
+      const { page = 1, limit = 12 } = req.query;
+      const skip = (parseInt(page) - 1) * parseInt(limit);
+      const take = parseInt(limit);
+
+      const [orders, total] = await Promise.all([
+        prisma.order.findMany({
+          where: { user_id: userId },
+          orderBy: { created_at: "desc" },
+          skip,
+          take,
+          include: { items: { select: { id: true } } },
+        }),
+        prisma.order.count({ where: { user_id: userId } }),
+      ]);
+
+      res.json({
+        success: true,
+        data: orders.map((o) => ({
+          id: `#${o.order_number}`,
+          orderNumber: o.order_number,
+          status: o.status.toUpperCase(),
+          date: o.created_at,
+          total: parseFloat(o.total),
+          productCount: o.items.length,
+        })),
+        meta: {
+          page: parseInt(page),
+          limit: take,
+          total,
+          totalPages: Math.ceil(total / take),
+        },
+      });
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  // GET /api/orders/track/:orderNumber
+  trackOrder: async (req, res, next) => {
+    try {
+      const order = await prisma.order.findUnique({
+        where: { order_number: req.params.orderNumber },
+        include: { items: true },
+      });
+      if (!order) {
+        return res
+          .status(404)
+          .json({ success: false, message: "Porosia s'u gjet" });
+      }
+      res.json({ success: true, data: order });
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  // GET /api/orders/:id — detajet e nje porosie
+  getById: async (req, res, next) => {
+    try {
+      const id = parseInt(req.params.id);
+      const order = await prisma.order.findUnique({
+        where: { id },
+        include: {
+          items: { include: { product: { include: { category: true } } } },
+          shipping_address: true,
+          billing_address: true,
+        },
+      });
+
+      if (!order) {
+        return res
+          .status(404)
+          .json({ success: false, message: "Porosia s'u gjet" });
+      }
+
+      // Siguri — vetem pronari ose admin
+      if (
+        order.user_id !== req.user.id &&
+        !(req.user.roles || []).includes("admin")
+      ) {
+        return res
+          .status(403)
+          .json({ success: false, message: "Akses i ndaluar" });
+      }
+
+      res.json({ success: true, data: order });
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  // GET /api/orders/admin/all — te gjitha porosite (admin)
+  getAllOrders: async (req, res, next) => {
+    try {
+      const orders = await prisma.order.findMany({
+        orderBy: { created_at: "desc" },
+        include: {
+          user: { select: { first_name: true, last_name: true, email: true } },
+          items: { select: { id: true } },
+        },
+      });
+      res.json({ success: true, data: orders });
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  // PUT /api/orders/:id/status
+  updateStatus: async (req, res, next) => {
+    try {
+      const id = parseInt(req.params.id);
+      const { status } = req.body;
+      const order = await prisma.order.update({
+        where: { id },
+        data: { status, updated_by: req.user.id },
+      });
+      res.json({ success: true, data: order });
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  // PUT /api/orders/:id/tracking
+  addTracking: async (req, res, next) => {
+    try {
+      const id = parseInt(req.params.id);
+      const { tracking_number, carrier, estimated_delivery } = req.body;
+      const order = await prisma.order.update({
+        where: { id },
+        data: {
+          tracking_number,
+          carrier,
+          estimated_delivery: estimated_delivery
+            ? new Date(estimated_delivery)
+            : null,
+          updated_by: req.user.id,
+        },
+      });
+      res.json({ success: true, data: order });
+    } catch (error) {
+      next(error);
+    }
+  },
 };
