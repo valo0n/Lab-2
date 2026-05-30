@@ -1,6 +1,8 @@
 const jwt = require("jsonwebtoken");
 const { prisma } = require("../config/database");
 
+const accessTokenSecret = process.env.JWT_ACCESS_SECRET || process.env.JWT_SECRET;
+
 const auth = async (req, res, next) => {
   try {
     const authHeader = req.headers.authorization;
@@ -8,7 +10,7 @@ const auth = async (req, res, next) => {
       return res.status(401).json({ message: "Access denied. No token." });
 
     const token = authHeader.split(" ")[1];
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = jwt.verify(token, accessTokenSecret);
     const user = await prisma.user.findUnique({
       where: { id: decoded.id },
       select: {

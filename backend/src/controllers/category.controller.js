@@ -57,12 +57,54 @@ module.exports = {
   },
 
   create: async (req, res, next) => {
-    res.json({ message: "TODO" });
+    try {
+      const slugify = require("slugify");
+      const { name, slug, icon_url, sort_order, is_active = true, parent_id } = req.body;
+      const category = await prisma.category.create({
+        data: {
+          name,
+          slug: slug || slugify(name, { lower: true, strict: true }),
+          icon_url: icon_url || null,
+          sort_order: sort_order !== undefined ? parseInt(sort_order, 10) : 0,
+          is_active: is_active === true || is_active === "true",
+          parent_id: parent_id ? parseInt(parent_id, 10) : null,
+          created_by: req.user.id,
+        },
+      });
+      res.status(201).json({ success: true, data: category });
+    } catch (error) {
+      next(error);
+    }
   },
   update: async (req, res, next) => {
-    res.json({ message: "TODO" });
+    try {
+      const slugify = require("slugify");
+      const id = parseInt(req.params.id, 10);
+      const { name, slug, icon_url, sort_order, is_active, parent_id } = req.body;
+      const category = await prisma.category.update({
+        where: { id },
+        data: {
+          ...(name && { name }),
+          ...(name || slug ? { slug: slug || (name ? slugify(name, { lower: true, strict: true }) : undefined) } : {}),
+          ...(icon_url !== undefined && { icon_url: icon_url || null }),
+          ...(sort_order !== undefined && { sort_order: parseInt(sort_order, 10) }),
+          ...(is_active !== undefined && { is_active: is_active === true || is_active === "true" }),
+          ...(parent_id !== undefined && { parent_id: parent_id ? parseInt(parent_id, 10) : null }),
+          updated_by: req.user.id,
+        },
+      });
+      res.json({ success: true, data: category });
+    } catch (error) {
+      next(error);
+    }
   },
   delete: async (req, res, next) => {
-    res.json({ message: "TODO" });
+    try {
+      const id = parseInt(req.params.id, 10);
+      await prisma.category.delete({ where: { id } });
+      res.json({ success: true, message: "Category u fshi" });
+    } catch (error) {
+      next(error);
+    }
   },
 };

@@ -48,7 +48,7 @@ module.exports = {
         where: { user_id: userId },
         orderBy: { created_at: "desc" },
         take: 7,
-        include: { order_items: { select: { id: true } } },
+        include: { items: { select: { id: true } } },
       });
 
       // Payment cards nga MongoDB
@@ -87,7 +87,7 @@ module.exports = {
             status: o.status,
             date: o.created_at,
             total: parseFloat(o.total_amount || 0),
-            productCount: o.order_items.length,
+            productCount: o.items.length,
           })),
           cards,
           browsing: browsing.map((b) => ({
@@ -167,15 +167,78 @@ module.exports = {
   },
 
   getAll: async (req, res, next) => {
-    res.json({ message: "TODO" });
+    try {
+      const users = await prisma.user.findMany({
+        orderBy: { created_at: "desc" },
+        include: { user_roles: { include: { role: true } } },
+      });
+
+      res.json({
+        success: true,
+        data: users.map((user) => ({
+          id: user.id,
+          name: `${user.first_name} ${user.last_name}`,
+          email: user.email,
+          is_active: user.is_active,
+          roles: user.user_roles.map((entry) => entry.role.name),
+        })),
+      });
+    } catch (error) {
+      next(error);
+    }
   },
   getById: async (req, res, next) => {
-    res.json({ message: "TODO" });
+    try {
+      const id = parseInt(req.params.id, 10);
+      const user = await prisma.user.findUnique({
+        where: { id },
+        include: { addresses: true, user_roles: { include: { role: true } } },
+      });
+
+      if (!user) {
+        return res.status(404).json({ success: false, message: "User not found" });
+      }
+
+      res.json({
+        success: true,
+        data: {
+          ...user,
+          roles: user.user_roles.map((entry) => entry.role.name),
+        },
+      });
+    } catch (error) {
+      next(error);
+    }
   },
   update: async (req, res, next) => {
-    res.json({ message: "TODO" });
+    try {
+      const id = parseInt(req.params.id, 10);
+      const { first_name, last_name, email, phone, avatar_url, is_active } = req.body;
+      const updated = await prisma.user.update({
+        where: { id },
+        data: {
+          ...(first_name && { first_name }),
+          ...(last_name && { last_name }),
+          ...(email && { email }),
+          ...(phone !== undefined && { phone: phone || null }),
+          ...(avatar_url !== undefined && { avatar_url: avatar_url || null }),
+          ...(is_active !== undefined && { is_active: is_active === true || is_active === "true" }),
+          updated_by: req.user?.id || null,
+        },
+      });
+
+      res.json({ success: true, data: updated });
+    } catch (error) {
+      next(error);
+    }
   },
   delete: async (req, res, next) => {
-    res.json({ message: "TODO" });
+    try {
+      const id = parseInt(req.params.id, 10);
+      await prisma.user.delete({ where: { id } });
+      res.json({ success: true, message: "User u fshi" });
+    } catch (error) {
+      next(error);
+    }
   },
 };

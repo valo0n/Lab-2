@@ -21,6 +21,7 @@ model User {
   phone         String?  @db.VarChar(20)
   avatar_url    String?  @db.VarChar(500)
   is_active     Boolean  @default(true)
+  email_verified_at DateTime?
   created_by    Int?
   updated_by    Int?
   created_at    DateTime @default(now())
@@ -64,7 +65,7 @@ model UserRole {
   role Role @relation(fields: [role_id], references: [id], onDelete: Cascade)
 
   @@unique([user_id, role_id])
-  @@map("user_roles")
+  @@map("userroles")
 }
 
 model Permission {
@@ -86,7 +87,7 @@ model RolePermission {
   permission Permission @relation(fields: [permission_id], references: [id], onDelete: Cascade)
 
   @@unique([role_id, permission_id])
-  @@map("role_permissions")
+  @@map("rolepermissions")
 }
 
 model RefreshToken {
@@ -101,7 +102,7 @@ model RefreshToken {
 
   @@index([token_hash(length: 255)])
   @@index([user_id, revoked_at])
-  @@map("refresh_tokens")
+  @@map("refreshtokens")
 }
 
 model AuditLog {
@@ -119,7 +120,7 @@ model AuditLog {
 
   @@index([entity, entity_id])
   @@index([user_id, action])
-  @@map("audit_logs")
+  @@map("auditlogs")
 }
 
 model Notification {
@@ -178,7 +179,7 @@ model SocialAccount {
   user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
   @@unique([provider, provider_id])
-  @@map("social_accounts")
+  @@map("socialaccounts")
 }
 
 model Category {
@@ -268,7 +269,7 @@ model ProductImage {
   product Product @relation(fields: [product_id], references: [id], onDelete: Cascade)
 
   @@index([product_id])
-  @@map("product_images")
+  @@map("productimages")
 }
 
 model ProductVariant {
@@ -285,7 +286,7 @@ model ProductVariant {
   order_items OrderItem[]
 
   @@index([product_id])
-  @@map("product_variants")
+  @@map("productvariants")
 }
 
 model Tag {
@@ -307,7 +308,7 @@ model ProductTag {
   tag     Tag     @relation(fields: [tag_id], references: [id], onDelete: Cascade)
 
   @@unique([product_id, tag_id])
-  @@map("product_tags")
+  @@map("producttags")
 }
 
 model Review {
@@ -353,7 +354,7 @@ model CompareItem {
   product Product @relation(fields: [product_id], references: [id], onDelete: Cascade)
 
   @@unique([user_id, product_id])
-  @@map("compare_items")
+  @@map("compareitems")
 }
 
 model Cart {
@@ -381,7 +382,7 @@ model CartItem {
   variant ProductVariant? @relation(fields: [variant_id], references: [id], onDelete: SetNull)
 
   @@index([cart_id])
-  @@map("cart_items")
+  @@map("cartitems")
 }
 
 model Address {
@@ -464,7 +465,7 @@ model OrderItem {
   variant ProductVariant? @relation(fields: [variant_id], references: [id], onDelete: SetNull)
 
   @@index([order_id])
-  @@map("order_items")
+  @@map("orderitems")
 }
 
 model Payment {

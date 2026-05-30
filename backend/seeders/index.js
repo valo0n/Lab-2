@@ -109,16 +109,32 @@ async function seed() {
     console.log("✅ Role permissions assigned");
 
     // --- ADMIN USER ---
-    const admin = await prisma.user.create({
-      data: {
+    const adminPasswordHash = await hashPassword("Admin@123");
+    const admin = await prisma.user.upsert({
+      where: { email: "admin@clicon.com" },
+      update: {
+        first_name: "Admin",
+        last_name: "User",
+        password_hash: adminPasswordHash,
+        is_active: true,
+        email_verified_at: new Date(),
+      },
+      create: {
         first_name: "Admin",
         last_name: "User",
         email: "admin@clicon.com",
-        password_hash: await hashPassword("Admin@123"),
+        password_hash: adminPasswordHash,
         is_active: true,
+        email_verified_at: new Date(),
       },
     });
-    await prisma.userRole.create({ data: { user_id: admin.id, role_id: 1 } });
+    await prisma.userRole.upsert({
+      where: {
+        user_id_role_id: { user_id: admin.id, role_id: 1 },
+      },
+      update: {},
+      create: { user_id: admin.id, role_id: 1 },
+    });
     console.log("✅ Admin user (admin@clicon.com / Admin@123)");
 
     // --- SETTINGS ---

@@ -18,4 +18,33 @@ const loginSchema = Joi.object({
   email: Joi.string().email().required(),
   password: Joi.string().required(),
 });
-module.exports = { registerSchema, loginSchema };
+
+const forgotPasswordSchema = Joi.object({
+  email: Joi.string().email().required(),
+});
+
+const resetPasswordSchema = Joi.object({
+  email: Joi.string().email().required(),
+  code: Joi.string().pattern(/^\d{6}$/).required(),
+  password: Joi.string()
+    .min(8)
+    .max(128)
+    .pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/)
+    .required()
+    .messages({
+      'string.pattern.base': 'Password must have uppercase, lowercase, and number',
+    }),
+});
+
+const verificationSchema = Joi.object({
+  email: Joi.string().email().required(),
+  code: Joi.string().pattern(/^\d{6}$/).required(),
+});
+
+module.exports = {
+  registerSchema,
+  loginSchema,
+  forgotPasswordSchema,
+  resetPasswordSchema,
+  verificationSchema,
+};

@@ -1,7 +1,48 @@
-import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import SiteLayout from "../../components/common/SiteLayout";
+import { authService } from "../../services/authService";
 
 export default function ResetPasswordPage() {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const [email, setEmail] = useState("");
+  const [code, setCode] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    const initialEmail = location.state?.email || authService.getResetPasswordEmail();
+    if (initialEmail) {
+      setEmail(initialEmail);
+    }
+  }, [location.state]);
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    setError("");
+    setMessage("");
+
+    if (password !== confirmPassword) {
+      setError("Passwords do not match");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const result = await authService.resetPassword(email, code, password);
+      setMessage(result.message || "Password updated successfully");
+      navigate("/signin");
+    } catch (err) {
+      setError(err.response?.data?.message || "Could not reset password");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <SiteLayout
       title="Reset Password"
@@ -18,12 +59,30 @@ export default function ResetPasswordPage() {
             Use at least 8 characters with a mix of letters and numbers.
           </p>
 
-          <form className="mt-6 space-y-4">
+          <form className="mt-6 space-y-4" onSubmit={handleSubmit}>
+            {error && <div className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>}
+            {message && <div className="rounded-md border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">{message}</div>}
+
+            <div>
+              <label className="mb-2 block text-sm font-medium text-gray-700">Email Address</label>
+              <input
+                type="email"
+                placeholder="name@example.com"
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
+                required
+                className="w-full rounded-md border border-gray-300 px-3 py-3 text-sm outline-none transition focus:border-sky-500"
+              />
+            </div>
+
             <div>
               <label className="mb-2 block text-sm font-medium text-gray-700">Verification Code</label>
               <input
                 type="text"
                 placeholder="Enter code from email"
+                value={code}
+                onChange={(event) => setCode(event.target.value.replace(/\D/g, ""))}
+                required
                 className="w-full rounded-md border border-gray-300 px-3 py-3 text-sm outline-none transition focus:border-sky-500"
               />
             </div>
@@ -33,6 +92,9 @@ export default function ResetPasswordPage() {
               <input
                 type="password"
                 placeholder="New password"
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+                required
                 className="w-full rounded-md border border-gray-300 px-3 py-3 text-sm outline-none transition focus:border-sky-500"
               />
             </div>
@@ -42,15 +104,19 @@ export default function ResetPasswordPage() {
               <input
                 type="password"
                 placeholder="Confirm password"
+                value={confirmPassword}
+                onChange={(event) => setConfirmPassword(event.target.value)}
+                required
                 className="w-full rounded-md border border-gray-300 px-3 py-3 text-sm outline-none transition focus:border-sky-500"
               />
             </div>
 
             <button
-              type="button"
+              type="submit"
+              disabled={loading}
               className="w-full rounded-md bg-orange-500 px-4 py-3 text-sm font-semibold uppercase tracking-wide text-white transition hover:bg-orange-600"
             >
-              Update Password
+              {loading ? "Updating..." : "Update Password"}
             </button>
           </form>
 
