@@ -24,6 +24,19 @@ app.get('/api/health', (req, res) => {
     res.json({ status: 'OK', timestamp: new Date().toISOString() });
 });
 
+// Serve frontend static files (if frontend build exists) so client routes like
+// /signin and /signup work when the app is hosted from the same server.
+const fs = require('fs');
+const frontendDist = path.join(__dirname, '..', '..', 'frontend', 'dist');
+if (fs.existsSync(frontendDist)) {
+    app.use(express.static(frontendDist));
+    app.get('*', (req, res, next) => {
+        // don't interfere with API routes
+        if (req.path.startsWith('/api')) return next();
+        res.sendFile(path.join(frontendDist, 'index.html'));
+    });
+}
+
 // Error handling
 const { errorHandler, notFound } = require('./middleware/errorHandler');
 app.use(notFound);

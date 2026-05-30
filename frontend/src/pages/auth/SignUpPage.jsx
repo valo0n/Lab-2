@@ -18,8 +18,17 @@ export default function SignUpPage() {
     event.preventDefault();
     setError("");
 
+    const trimmedFirstName = firstName.trim();
+    const trimmedLastName = lastName.trim();
+    const trimmedEmail = email.trim().toLowerCase();
+
     if (password !== confirmPassword) {
       setError("Passwords do not match");
+      return;
+    }
+
+    if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,128}$/.test(password)) {
+      setError("Password must include uppercase, lowercase, and a number");
       return;
     }
 
@@ -30,12 +39,18 @@ export default function SignUpPage() {
 
     setLoading(true);
     try {
-      const result = await authService.register(`${firstName} ${lastName}`.trim(), email, password);
+      const result = await authService.register({
+        first_name: trimmedFirstName,
+        last_name: trimmedLastName,
+        email: trimmedEmail,
+        password,
+      });
       if (result.success) {
-        navigate("/email-verification", { state: { email } });
+        navigate("/email-verification", { state: { email: trimmedEmail } });
       }
     } catch (err) {
-      setError(err.response?.data?.message || "Sign up failed");
+      const firstValidationError = err.response?.data?.errors?.[0]?.message;
+      setError(firstValidationError || err.response?.data?.message || "Sign up failed");
     } finally {
       setLoading(false);
     }

@@ -18,11 +18,13 @@ export const authService = {
     return response.data;
   },
 
-  register: async (name, email, password) => {
+  register: async ({ first_name, last_name, email, password, phone }) => {
     const response = await api.post("/auth/register", {
-      name,
+      first_name,
+      last_name,
       email,
       password,
+      ...(phone ? { phone } : {}),
     });
     if (response.data.success) {
       setSession(response.data.data);
