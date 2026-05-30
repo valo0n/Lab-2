@@ -81,7 +81,7 @@ export default function Footer() {
             </h4>
             <ul className="space-y-1.5 sm:space-y-2 text-gray-300 text-[11px] sm:text-xs">
               <li>
-                <Link to="/" className="hover:text-primary">
+                <Link to="/shop-page" className="hover:text-primary">
                   Shop Product
                 </Link>
               </li>
@@ -96,8 +96,13 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
-                <Link to="/customer" className="hover:text-primary">
+                <Link to="/compare" className="hover:text-primary">
                   Compare
+                </Link>
+              </li>
+              <li>
+                <Link to="/blog" className="hover:text-primary">
+                  Blog
                 </Link>
               </li>
               <li>

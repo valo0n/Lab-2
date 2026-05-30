@@ -37,6 +37,7 @@ import SettingsPage from "./pages/account/SettingsPage";
 import AboutUsPage from "./pages/info/AboutUsPage";
 import BlogPage from "./pages/info/BlogPage";
 import FAQsPage from "./pages/info/FAQsPage";
+import BlogDetailPage from "./pages/info/BlogDetailPage";
 
 // Order
 import SuccessPage from "./pages/order/SuccessPage";
@@ -91,7 +92,8 @@ function App() {
             <Route path="/about-us" element={<AboutUsPage />} />
             <Route path="/blog" element={<BlogPage />} />
             <Route path="/faqs" element={<FAQsPage />} />
-
+            <Route path="/blog-detail" element={<BlogDetailPage />} />
+            
             {/* Order */}
             <Route path="/success" element={<SuccessPage />} />
 
