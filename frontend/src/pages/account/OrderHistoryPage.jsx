@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import {
   Layers,
@@ -13,12 +13,12 @@ import {
   LogOut,
   Home,
   ChevronRight,
-  ArrowRight,
 } from "lucide-react";
 import TopBar from "../../components/Layout/TopBar";
 import Header from "../../components/Layout/Header";
 import Navigation from "../../components/Layout/Navigation";
 import Footer from "../../components/Layout/Footer";
+import { orderService } from "../../services/orderService";
 
 const sidebarItems = [
   { name: "Dashboard", icon: Layers, path: "/dashboard" },
@@ -33,86 +33,16 @@ const sidebarItems = [
   { name: "Log-out", icon: LogOut, path: "/signin" },
 ];
 
-const allOrders = [
-  {
-    id: "#96459761",
-    status: "IN PROGRESS",
-    date: "Dec 30, 2019 07:52",
-    total: "$80 (5 Products)",
-  },
-  {
-    id: "#71667167",
-    status: "COMPLETED",
-    date: "Dec 7, 2019 23:26",
-    total: "$70 (4 Products)",
-  },
-  {
-    id: "#95214362",
-    status: "CANCELED",
-    date: "Dec 7, 2019 23:26",
-    total: "$2,300 (2 Products)",
-  },
-  {
-    id: "#71667167",
-    status: "COMPLETED",
-    date: "Feb 2, 2019 19:28",
-    total: "$250 (1 Products)",
-  },
-  {
-    id: "#51746385",
-    status: "COMPLETED",
-    date: "Dec 30, 2019 07:52",
-    total: "$360 (2 Products)",
-  },
-  {
-    id: "#51746385",
-    status: "CANCELED",
-    date: "Dec 4, 2019 21:42",
-    total: "$220 (7 Products)",
-  },
-  {
-    id: "#673971743",
-    status: "COMPLETED",
-    date: "Feb 2, 2019 19:28",
-    total: "$80 (1 Products)",
-  },
-  {
-    id: "#673971743",
-    status: "COMPLETED",
-    date: "Mar 20, 2019 23:14",
-    total: "$160 (1 Products)",
-  },
-  {
-    id: "#673971743",
-    status: "COMPLETED",
-    date: "Dec 4, 2019 21:42",
-    total: "$1,500 (3 Products)",
-  },
-  {
-    id: "#673971743",
-    status: "COMPLETED",
-    date: "Dec 30, 2019 07:52",
-    total: "$1,200 (19 Products)",
-  },
-  {
-    id: "#673971743",
-    status: "CANCELED",
-    date: "Dec 30, 2019 05:18",
-    total: "$1,500 (1 Products)",
-  },
-  {
-    id: "#673971743",
-    status: "COMPLETED",
-    date: "Dec 30, 2019 07:52",
-    total: "$80 (1 Products)",
-  },
-];
-
 function StatusBadge({ status }) {
   const colors = {
     "IN PROGRESS": "text-warning",
+    PENDING: "text-warning",
+    PROCESSING: "text-warning",
+    SHIPPED: "text-info",
     COMPLETED: "text-success",
+    DELIVERED: "text-success",
     CANCELED: "text-danger",
+    CANCELLED: "text-danger",
   };
   return (
     <span
@@ -123,12 +53,43 @@ function StatusBadge({ status }) {
   );
 }
 
+function formatDate(dateStr) {
+  if (!dateStr) return "";
+  const d = new Date(dateStr);
+  return d.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
+}
+
 export default function OrderHistoryPage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
   const [wishlistOpen, setWishlistOpen] = useState(false);
   const [accountOpen, setAccountOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
+
+  const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [totalPages, setTotalPages] = useState(1);
+
+  useEffect(() => {
+    const fetchOrders = async () => {
+      try {
+        setLoading(true);
+        const result = await orderService.getMyOrders(currentPage, 12);
+        setOrders(result.data || []);
+        setTotalPages(result.meta?.totalPages || 1);
+      } catch (err) {
+        console.error("Failed to fetch orders:", err);
+        setOrders([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchOrders();
+  }, [currentPage]);
 
   const toggleCart = () => {
     setCartOpen((v) => !v);
@@ -146,7 +107,10 @@ export default function OrderHistoryPage() {
     setWishlistOpen(false);
   };
 
-  const totalPages = 6;
+  const pageNumbers = Array.from(
+    { length: Math.min(totalPages, 6) },
+    (_, i) => i + 1,
+  );
 
   return (
     <div className="min-h-screen bg-white font-sans">
@@ -228,82 +192,84 @@ export default function OrderHistoryPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {allOrders.map((order, i) => (
-                      <tr key={i} className="border-t border-gray-100">
-                        <td className="px-5 py-4 text-dark">{order.id}</td>
-                        <td className="px-5 py-4">
-                          <StatusBadge status={order.status} />
-                        </td>
-                        <td className="px-5 py-4 text-dark-300">
-                          {order.date}
-                        </td>
-                        <td className="px-5 py-4 text-dark">{order.total}</td>
-                        <td className="px-5 py-4">
-                          <Link
-                            to="/order-details"
-                            className="text-info text-xs font-medium hover:underline"
-                          >
-                            View Details →
-                          </Link>
+                    {loading ? (
+                      <tr>
+                        <td
+                          colSpan="5"
+                          className="px-5 py-8 text-center text-dark-300"
+                        >
+                          Duke ngarkuar...
                         </td>
                       </tr>
-                    ))}
+                    ) : orders.length === 0 ? (
+                      <tr>
+                        <td
+                          colSpan="5"
+                          className="px-5 py-8 text-center text-dark-300"
+                        >
+                          Ende s'ka porosi
+                        </td>
+                      </tr>
+                    ) : (
+                      orders.map((order, i) => (
+                        <tr key={i} className="border-t border-gray-100">
+                          <td className="px-5 py-4 text-dark">{order.id}</td>
+                          <td className="px-5 py-4">
+                            <StatusBadge status={order.status} />
+                          </td>
+                          <td className="px-5 py-4 text-dark-300">
+                            {formatDate(order.date)}
+                          </td>
+                          <td className="px-5 py-4 text-dark">
+                            ${order.total} ({order.productCount} Products)
+                          </td>
+                          <td className="px-5 py-4">
+                            <Link
+                              to={`/order-details?id=${order.orderNumber}`}
+                              className="text-info text-xs font-medium hover:underline"
+                            >
+                              View Details →
+                            </Link>
+                          </td>
+                        </tr>
+                      ))
+                    )}
                   </tbody>
                 </table>
               </div>
 
               {/* Pagination */}
-              <div className="flex items-center justify-center gap-2 py-6">
-                <button
-                  onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-                  className="w-9 h-9 rounded-full border border-primary text-primary flex items-center justify-center hover:bg-primary hover:text-white transition-colors"
-                >
-                  ←
-                </button>
-                {[1, 2, 3, 4, 5, 6].map((n) => (
+              {orders.length > 0 && (
+                <div className="flex items-center justify-center gap-2 py-6">
                   <button
-                    key={n}
-                    onClick={() => setCurrentPage(n)}
-                    className={`w-9 h-9 rounded-full flex items-center justify-center text-sm font-medium transition-colors ${
-                      n === currentPage
-                        ? "bg-primary text-white"
-                        : "text-dark hover:bg-gray-50"
-                    }`}
+                    onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                    className="w-9 h-9 rounded-full border border-primary text-primary flex items-center justify-center hover:bg-primary hover:text-white transition-colors"
                   >
-                    {String(n).padStart(2, "0")}
+                    ←
                   </button>
-                ))}
-                <button
-                  onClick={() =>
-                    setCurrentPage(Math.min(totalPages, currentPage + 1))
-                  }
-                  className="w-9 h-9 rounded-full border border-primary text-primary flex items-center justify-center hover:bg-primary hover:text-white transition-colors"
-                >
-                  →
-                </button>
-              </div>
-            </div>
-
-            {/* In Progress card below */}
-            <div className="mt-6 bg-white border border-gray-100 rounded-lg p-5 flex items-center justify-between">
-              <div>
-                <span className="inline-block bg-yellow-100 text-yellow-700 text-[10px] font-bold px-2 py-1 rounded mb-2">
-                  IN PROGRESS
-                </span>
-                <h4 className="font-bold text-dark mb-1">
-                  Order ID: <span className="text-info">#71667167</span>
-                </h4>
-                <p className="text-xs text-dark-300 mb-1">
-                  Dec 7, 2019 23:26 • 2 Products
-                </p>
-                <p className="text-info font-bold text-sm">$160.00 USD</p>
-              </div>
-              <Link
-                to="/order-details"
-                className="w-10 h-10 border border-primary text-primary rounded-full flex items-center justify-center hover:bg-primary hover:text-white transition-colors"
-              >
-                <ArrowRight size={18} />
-              </Link>
+                  {pageNumbers.map((n) => (
+                    <button
+                      key={n}
+                      onClick={() => setCurrentPage(n)}
+                      className={`w-9 h-9 rounded-full flex items-center justify-center text-sm font-medium transition-colors ${
+                        n === currentPage
+                          ? "bg-primary text-white"
+                          : "text-dark hover:bg-gray-50"
+                      }`}
+                    >
+                      {String(n).padStart(2, "0")}
+                    </button>
+                  ))}
+                  <button
+                    onClick={() =>
+                      setCurrentPage(Math.min(totalPages, currentPage + 1))
+                    }
+                    className="w-9 h-9 rounded-full border border-primary text-primary flex items-center justify-center hover:bg-primary hover:text-white transition-colors"
+                  >
+                    →
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </div>

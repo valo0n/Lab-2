@@ -15,6 +15,7 @@ export default function AccountPopup({ isOpen, onClose }) {
 
   const user = authService.getCurrentUser();
   const isLoggedIn = authService.isLoggedIn();
+  const isAdmin = authService.isAdmin();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -27,7 +28,15 @@ export default function AccountPopup({ isOpen, onClose }) {
         setEmail("");
         setPassword("");
         onClose();
-        navigate("/dashboard");
+
+        // Ndaj sipas rolit: admin -> /admin, user -> /
+        const loggedUser = result.data?.user;
+        const roles = loggedUser?.roles || [];
+        if (roles.includes("admin") || roles.includes("super_admin")) {
+          navigate("/admin");
+        } else {
+          navigate("/");
+        }
       }
     } catch (err) {
       setError(err.response?.data?.message || "Login dështoi, provo përsëri");
@@ -65,13 +74,26 @@ export default function AccountPopup({ isOpen, onClose }) {
             </div>
 
             <div className="space-y-1">
-              <Link
-                to="/dashboard"
-                onClick={onClose}
-                className="block w-full text-left px-3 py-2 text-sm text-dark hover:bg-gray-50 rounded"
-              >
-                Dashboard
-              </Link>
+              {/* Vetem admin sheh Admin Dashboard */}
+              {isAdmin && (
+                <Link
+                  to="/admin"
+                  onClick={onClose}
+                  className="block w-full text-left px-3 py-2 text-sm text-primary font-semibold hover:bg-primary-50 rounded"
+                >
+                  Admin Dashboard
+                </Link>
+              )}
+              {/* User normal sheh profilin e tij */}
+              {!isAdmin && (
+                <Link
+                  to="/dashboard"
+                  onClick={onClose}
+                  className="block w-full text-left px-3 py-2 text-sm text-dark hover:bg-gray-50 rounded"
+                >
+                  My Profile
+                </Link>
+              )}
               <Link
                 to="/order-history"
                 onClick={onClose}

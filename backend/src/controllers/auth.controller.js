@@ -3,7 +3,8 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const AuthChallenge = require("../models/nosql/AuthChallenge");
 
-const accessTokenSecret = process.env.JWT_ACCESS_SECRET || process.env.JWT_SECRET;
+const accessTokenSecret =
+  process.env.JWT_ACCESS_SECRET || process.env.JWT_SECRET;
 const challengeExpiryMs = 15 * 60 * 1000;
 
 const createChallengeCode = () =>
@@ -62,12 +63,10 @@ module.exports = {
       }
 
       if (!email || !password) {
-        return res
-          .status(400)
-          .json({
-            success: false,
-            message: "Email dhe password jane te detyrueshme",
-          });
+        return res.status(400).json({
+          success: false,
+          message: "Email dhe password jane te detyrueshme",
+        });
       }
 
       // Check nese ekziston
@@ -135,12 +134,10 @@ module.exports = {
       const { email, password } = req.body;
 
       if (!email || !password) {
-        return res
-          .status(400)
-          .json({
-            success: false,
-            message: "Email dhe password jane te detyrueshme",
-          });
+        return res.status(400).json({
+          success: false,
+          message: "Email dhe password jane te detyrueshme",
+        });
       }
 
       // Gjej userin
@@ -163,13 +160,6 @@ module.exports = {
         return res
           .status(401)
           .json({ success: false, message: "Email ose password gabim" });
-      }
-
-      if (!user.email_verified_at) {
-        return res.status(403).json({
-          success: false,
-          message: "Ju lutem verifikoni email-in para se te kyçeni",
-        });
       }
 
       // Merr rolet

@@ -46,11 +46,13 @@ export default function SignUpPage() {
         password,
       });
       if (result.success) {
-        navigate("/email-verification", { state: { email: trimmedEmail } });
+        navigate("/", { state: { email: trimmedEmail } });
       }
     } catch (err) {
       const firstValidationError = err.response?.data?.errors?.[0]?.message;
-      setError(firstValidationError || err.response?.data?.message || "Sign up failed");
+      setError(
+        firstValidationError || err.response?.data?.message || "Sign up failed",
+      );
     } finally {
       setLoading(false);
     }
@@ -60,18 +62,21 @@ export default function SignUpPage() {
     <SiteLayout
       title="Sign Up"
       subtitle="Create a free account and manage your orders from one place."
-      breadcrumb={[
-        { label: "Home", to: "/" },
-        { label: "Sign Up" },
-      ]}
+      breadcrumb={[{ label: "Home", to: "/" }, { label: "Sign Up" }]}
     >
       <section className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-2xl rounded-2xl border border-gray-200 bg-white p-8 shadow-sm sm:p-10">
           <form className="grid gap-4 sm:grid-cols-2" onSubmit={handleSubmit}>
-            {error && <div className="sm:col-span-2 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>}
+            {error && (
+              <div className="sm:col-span-2 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                {error}
+              </div>
+            )}
 
             <div>
-              <label className="mb-2 block text-sm font-medium text-gray-700">First Name</label>
+              <label className="mb-2 block text-sm font-medium text-gray-700">
+                First Name
+              </label>
               <input
                 type="text"
                 placeholder="John"
@@ -83,7 +88,9 @@ export default function SignUpPage() {
             </div>
 
             <div>
-              <label className="mb-2 block text-sm font-medium text-gray-700">Last Name</label>
+              <label className="mb-2 block text-sm font-medium text-gray-700">
+                Last Name
+              </label>
               <input
                 type="text"
                 placeholder="Doe"
@@ -95,7 +102,9 @@ export default function SignUpPage() {
             </div>
 
             <div className="sm:col-span-2">
-              <label className="mb-2 block text-sm font-medium text-gray-700">Email</label>
+              <label className="mb-2 block text-sm font-medium text-gray-700">
+                Email
+              </label>
               <input
                 type="email"
                 placeholder="name@example.com"
@@ -107,7 +116,9 @@ export default function SignUpPage() {
             </div>
 
             <div>
-              <label className="mb-2 block text-sm font-medium text-gray-700">Password</label>
+              <label className="mb-2 block text-sm font-medium text-gray-700">
+                Password
+              </label>
               <input
                 type="password"
                 placeholder="Create password"
@@ -119,7 +130,9 @@ export default function SignUpPage() {
             </div>
 
             <div>
-              <label className="mb-2 block text-sm font-medium text-gray-700">Confirm Password</label>
+              <label className="mb-2 block text-sm font-medium text-gray-700">
+                Confirm Password
+              </label>
               <input
                 type="password"
                 placeholder="Confirm password"
@@ -151,7 +164,10 @@ export default function SignUpPage() {
 
           <p className="mt-5 text-sm text-gray-600">
             Already have an account?{" "}
-            <Link to="/signin" className="font-medium text-sky-600 hover:underline">
+            <Link
+              to="/signin"
+              className="font-medium text-sky-600 hover:underline"
+            >
               Sign In
             </Link>
           </p>

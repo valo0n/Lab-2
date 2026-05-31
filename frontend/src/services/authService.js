@@ -78,11 +78,24 @@ export const authService = {
     return user ? JSON.parse(user) : null;
   },
 
-  getPendingVerificationEmail: () => localStorage.getItem("pendingVerificationEmail") || "",
+  getPendingVerificationEmail: () =>
+    localStorage.getItem("pendingVerificationEmail") || "",
 
   getResetPasswordEmail: () => localStorage.getItem("resetPasswordEmail") || "",
 
   isLoggedIn: () => {
     return !!localStorage.getItem("token");
+  },
+
+  isAdmin: () => {
+    const user = localStorage.getItem("user");
+    if (!user) return false;
+    try {
+      const parsed = JSON.parse(user);
+      const roles = parsed.roles || [];
+      return roles.includes("admin") || roles.includes("super_admin");
+    } catch {
+      return false;
+    }
   },
 };
