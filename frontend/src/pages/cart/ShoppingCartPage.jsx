@@ -4,6 +4,7 @@ import TopBar from "../../components/layout/TopBar";
 import Header from "../../components/layout/Header";
 import Navigation from "../../components/layout/Navigation";
 import Footer from "../../components/layout/Footer";
+import { useCart } from "../../context/CartContext";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 const SERVER_URL = API_URL.replace("/api", "");
@@ -26,6 +27,18 @@ function getCartItemId(item) {
 
 function getProduct(item) {
   return item?.product || item;
+}
+
+function isEmojiOrText(image) {
+  // Nese eshte emoji ose tekst i shkurter (jo URL/path)
+  if (!image || typeof image !== "string") return false;
+  if (
+    image.startsWith("http") ||
+    image.startsWith("/") ||
+    image.startsWith("uploads")
+  )
+    return false;
+  return true; // emoji si 📦 ose tekst
 }
 
 function getImageUrl(image) {
@@ -127,6 +140,13 @@ function Breadcrumb() {
 
 export default function ShoppingCartPage() {
   const navigate = useNavigate();
+  const {
+    cartItems,
+    removeByProductId,
+    updateQuantity,
+    clearCart: clearCtxCart,
+    replaceCart,
+  } = useCart();
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
@@ -137,138 +157,31 @@ export default function ShoppingCartPage() {
   const [couponDiscount, setCouponDiscount] = useState(0);
   const [couponMessage, setCouponMessage] = useState("");
 
-  const [cartItems, setCartItems] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
   const [error, setError] = useState("");
 
-  useEffect(() => {
-    fetchCart();
-  }, []);
-
-  async function fetchCart() {
-    try {
-      setLoading(true);
-      setError("");
-
-      const token = localStorage.getItem("token");
-
-      if (token) {
-        try {
-          const res = await fetch(`${API_URL}/cart`, {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          });
-
-          if (res.ok) {
-            const data = await res.json();
-            const backendItems =
-              data.data?.items || data.data || data.items || data.cart || [];
-
-            setCartItems(normalizeCartItems(backendItems));
-            return;
-          }
-        } catch (backendError) {
-          console.error("Backend cart failed:", backendError);
-        }
-      }
-
-      const localCart = JSON.parse(localStorage.getItem("cart") || "[]");
-      setCartItems(normalizeCartItems(localCart));
-    } catch (err) {
-      console.error("Error fetching cart:", err);
-      setError("Cart could not be loaded.");
-      setCartItems([]);
-    } finally {
-      setLoading(false);
-    }
+  // Context ngarkon cart-in nga localStorage automatikisht
+  function fetchCart() {
+    // Refresh manual - Context e mban gjendjen, ky vetem hiq loading
+    setLoading(false);
   }
 
-  function saveLocalCart(items) {
-    localStorage.setItem("cart", JSON.stringify(items));
-  }
-
-  async function updateQuantity(item, type) {
+  function handleUpdateQuantity(item, type) {
     const productId = getProductId(item);
-    const cartItemId = getCartItemId(item);
-
+    const current = getQuantity(item);
     const newQuantity =
-      type === "increase"
-        ? getQuantity(item) + 1
-        : Math.max(1, getQuantity(item) - 1);
-
-    const updatedItems = cartItems.map((cartItem) =>
-      String(getProductId(cartItem)) === String(productId)
-        ? { ...cartItem, quantity: newQuantity }
-        : cartItem,
-    );
-
-    setCartItems(updatedItems);
-    saveLocalCart(updatedItems);
-
-    const token = localStorage.getItem("token");
-    if (!token) return;
-
-    try {
-      await fetch(`${API_URL}/cart/items/${cartItemId}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          quantity: newQuantity,
-        }),
-      });
-    } catch (err) {
-      console.error("Error updating quantity:", err);
-    }
+      type === "increase" ? current + 1 : Math.max(1, current - 1);
+    updateQuantity(productId, newQuantity);
   }
 
-  async function removeItem(item) {
+  function removeItem(item) {
     const productId = getProductId(item);
-    const cartItemId = getCartItemId(item);
-
-    const updatedItems = cartItems.filter(
-      (cartItem) => String(getProductId(cartItem)) !== String(productId),
-    );
-
-    setCartItems(updatedItems);
-    saveLocalCart(updatedItems);
-
-    const token = localStorage.getItem("token");
-    if (!token) return;
-
-    try {
-      await fetch(`${API_URL}/cart/items/${cartItemId}`, {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-    } catch (err) {
-      console.error("Error removing item:", err);
-    }
+    removeByProductId(productId);
   }
 
-  async function clearCart() {
-    setCartItems([]);
-    saveLocalCart([]);
-
-    const token = localStorage.getItem("token");
-    if (!token) return;
-
-    try {
-      await fetch(`${API_URL}/cart`, {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-    } catch (err) {
-      console.error("Error clearing cart:", err);
-    }
+  function clearCart() {
+    clearCtxCart();
   }
 
   async function applyCoupon() {
@@ -455,14 +368,25 @@ export default function ShoppingCartPage() {
                         ×
                       </button>
 
-                      <Link to={`/products/${item.slug || productId}`}>
-                        <img
-                          src={getImageUrl(
-                            item.image || getProductImage(product),
-                          )}
-                          alt={item.name}
-                          className="h-20 w-20 rounded object-contain"
-                        />
+                      <Link
+                        to={`/products/${item.slug || productId}`}
+                        className="h-20 w-20 rounded bg-gray-50 flex items-center justify-center overflow-hidden flex-shrink-0"
+                      >
+                        {isEmojiOrText(
+                          item.image || getProductImage(product),
+                        ) ? (
+                          <span className="text-3xl">
+                            {item.image || getProductImage(product)}
+                          </span>
+                        ) : (
+                          <img
+                            src={getImageUrl(
+                              item.image || getProductImage(product),
+                            )}
+                            alt={item.name}
+                            className="h-full w-full object-contain"
+                          />
+                        )}
                       </Link>
 
                       <div>
@@ -496,7 +420,7 @@ export default function ShoppingCartPage() {
                       <div className="flex w-fit items-center rounded-sm border border-gray-300">
                         <button
                           type="button"
-                          onClick={() => updateQuantity(item, "decrease")}
+                          onClick={() => handleUpdateQuantity(item, "decrease")}
                           className="px-3 py-2 text-base text-gray-700 hover:bg-gray-50"
                         >
                           −
@@ -508,7 +432,7 @@ export default function ShoppingCartPage() {
 
                         <button
                           type="button"
-                          onClick={() => updateQuantity(item, "increase")}
+                          onClick={() => handleUpdateQuantity(item, "increase")}
                           className="px-3 py-2 text-base text-gray-700 hover:bg-gray-50"
                         >
                           +

@@ -7,12 +7,56 @@ import {
   FiPlus,
   FiShoppingCart,
 } from "react-icons/fi";
+import { useNavigate } from "react-router-dom";
+import { useCart } from "../../context/CartContext";
+import { useWishlist } from "../../context/WishlistContext";
 
 export default function ProductQuickView({ isOpen, onClose, product }) {
   const [qty, setQty] = useState(1);
   const [selectedImage, setSelectedImage] = useState(0);
   const [selectedColor, setSelectedColor] = useState("black");
   const [selectedSize, setSelectedSize] = useState("128GB");
+
+  const navigate = useNavigate();
+  const { addToCart } = useCart();
+  const { addToWishlist } = useWishlist();
+
+  const handleAddToCart = () => {
+    if (!product) return;
+    const item = { ...product, quantity: qty, qty };
+    addToCart(item);
+    // ruaj edhe ne localStorage per ShoppingCartPage
+    const oldCart = JSON.parse(localStorage.getItem("cart") || "[]");
+    const exists = oldCart.find((p) => String(p.id) === String(product.id));
+    let newCart;
+    if (exists) {
+      newCart = oldCart.map((p) =>
+        String(p.id) === String(product.id)
+          ? { ...p, quantity: (p.quantity || 1) + qty }
+          : p,
+      );
+    } else {
+      newCart = [...oldCart, item];
+    }
+    localStorage.setItem("cart", JSON.stringify(newCart));
+    alert("Product added to cart");
+  };
+
+  const handleBuyNow = () => {
+    handleAddToCart();
+    onClose();
+    navigate("/cart");
+  };
+
+  const handleWishlist = () => {
+    if (!product) return;
+    addToWishlist(product);
+    const old = JSON.parse(localStorage.getItem("wishlist") || "[]");
+    if (!old.find((p) => String(p.id) === String(product.id))) {
+      localStorage.setItem("wishlist", JSON.stringify([...old, product]));
+    }
+    alert("Product added to wishlist");
+  };
 
   if (!isOpen) return null;
 
@@ -227,13 +271,17 @@ export default function ProductQuickView({ isOpen, onClose, product }) {
                   </button>
                 </div>
 
-                <button className="flex-1 bg-primary hover:bg-primary-600 text-white font-bold px-3 sm:px-6 py-2.5 sm:py-3 rounded text-xs sm:text-sm flex items-center justify-center gap-2">
+                <button
+                  onClick={handleAddToCart}
+                  className="flex-1 bg-primary hover:bg-primary-600 text-white font-bold px-3 sm:px-6 py-2.5 sm:py-3 rounded text-xs sm:text-sm flex items-center justify-center gap-2"
+                >
                   <FiShoppingCart size={16} />
                   <span className="hidden sm:inline">ADD TO CART</span>
                   <span className="sm:hidden">ADD</span>
                 </button>
 
                 <button
+                  onClick={handleWishlist}
                   aria-label="Wishlist"
                   className="w-10 h-10 border border-gray-100 rounded flex items-center justify-center hover:bg-primary hover:text-white hover:border-primary text-dark"
                 >
@@ -248,7 +296,10 @@ export default function ProductQuickView({ isOpen, onClose, product }) {
                 </button>
               </div>
 
-              <button className="w-full bg-dark hover:bg-dark-100 text-white font-bold py-3 rounded text-xs sm:text-sm mb-3">
+              <button
+                onClick={handleBuyNow}
+                className="w-full bg-dark hover:bg-dark-100 text-white font-bold py-3 rounded text-xs sm:text-sm mb-3"
+              >
                 BUY IT NOW →
               </button>
 

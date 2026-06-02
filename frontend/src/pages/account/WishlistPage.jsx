@@ -49,8 +49,10 @@ export default function WishlistPage() {
     wishlistItems.forEach((item) => removeFromWishlist(item.name));
   };
 
-  const subtotal = wishlistItems.reduce((sum, item) => sum + item.price, 0);
-
+  const subtotal = wishlistItems.reduce(
+    (sum, item) => sum + Number(item.price || 0),
+    0,
+  );
   return (
     <div className="min-h-screen bg-[#f7f7f8] font-sans text-[#191c1f]">
       <TopBar />
@@ -151,7 +153,9 @@ export default function WishlistPage() {
 
                       <div>
                         <p className="text-xs font-medium uppercase tracking-wide text-[#FA8232]">
-                          {item.category || "Product"}
+                          {typeof item.category === "object"
+                            ? item.category?.name
+                            : item.category || "Product"}
                         </p>
                         <h3 className="mt-1 text-base font-semibold text-[#191c1f]">
                           {item.name}

@@ -4,12 +4,19 @@ import TopBar from "../../components/layout/TopBar";
 import Header from "../../components/layout/Header";
 import Navigation from "../../components/layout/Navigation";
 import Footer from "../../components/layout/Footer";
+import { useCart } from "../../context/CartContext";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 const SERVER_URL = API_URL.replace("/api", "");
 
 function getProductId(item) {
-  return item?._id || item?.id || item?.product_id || item?.productId || item?.product?.id;
+  return (
+    item?._id ||
+    item?.id ||
+    item?.product_id ||
+    item?.productId ||
+    item?.product?.id
+  );
 }
 
 function getProduct(item) {
@@ -62,7 +69,7 @@ function getPrice(item) {
       product?.sale_price ||
       product?.discount_price ||
       product?.price ||
-      0
+      0,
   );
 }
 
@@ -93,8 +100,56 @@ function formatPrice(value) {
   return `$${Number(value || 0).toFixed(2)}`;
 }
 
+function Input({
+  label,
+  field,
+  placeholder,
+  className = "",
+  type = "text",
+  value,
+  onChange,
+}) {
+  return (
+    <div className={className}>
+      <label className="mb-2 block text-xs font-medium text-gray-700">
+        {label}
+      </label>
+      <input
+        type={type}
+        value={value || ""}
+        onChange={(e) => onChange(field, e.target.value)}
+        placeholder={placeholder}
+        className="h-11 w-full rounded-sm border border-gray-200 px-3 text-sm outline-none focus:border-orange-400"
+      />
+    </div>
+  );
+}
+
+function Select({ label, field, options, value, onChange }) {
+  return (
+    <div>
+      <label className="mb-2 block text-xs font-medium text-gray-700">
+        {label}
+      </label>
+      <select
+        value={value || ""}
+        onChange={(e) => onChange(field, e.target.value)}
+        className="h-11 w-full rounded-sm border border-gray-200 px-3 text-sm text-gray-700 outline-none focus:border-orange-400"
+      >
+        <option value="">Select...</option>
+        {options.map((option) => (
+          <option key={option} value={option}>
+            {option}
+          </option>
+        ))}
+      </select>
+    </div>
+  );
+}
+
 export default function CheckoutPage() {
   const navigate = useNavigate();
+  const { cartItems, clearCart } = useCart();
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
@@ -105,8 +160,7 @@ export default function CheckoutPage() {
   const [shipDifferent, setShipDifferent] = useState(false);
   const [orderNotes, setOrderNotes] = useState("");
 
-  const [cartItems, setCartItems] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [placingOrder, setPlacingOrder] = useState(false);
   const [error, setError] = useState("");
 
@@ -123,54 +177,6 @@ export default function CheckoutPage() {
     phone: "",
   });
 
-  useEffect(() => {
-    fetchCart();
-  }, []);
-
-  async function fetchCart() {
-    try {
-      setLoading(true);
-      setError("");
-
-      const token = localStorage.getItem("token");
-
-      if (token) {
-        try {
-          const res = await fetch(`${API_URL}/cart`, {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          });
-
-          if (res.ok) {
-            const data = await res.json();
-
-            const backendItems =
-              data.data?.items ||
-              data.data ||
-              data.items ||
-              data.cart ||
-              [];
-
-            setCartItems(normalizeCartItems(backendItems));
-            return;
-          }
-        } catch (backendError) {
-          console.error("Backend cart failed:", backendError);
-        }
-      }
-
-      const localCart = JSON.parse(localStorage.getItem("cart") || "[]");
-      setCartItems(normalizeCartItems(localCart));
-    } catch (err) {
-      console.error("Cart error:", err);
-      setError("Cart could not be loaded.");
-      setCartItems([]);
-    } finally {
-      setLoading(false);
-    }
-  }
-
   const { subtotal, shipping, discount, tax, total } = useMemo(() => {
     const subtotalValue = cartItems.reduce((sum, item) => {
       return sum + getPrice(item) * getQuantity(item);
@@ -181,7 +187,7 @@ export default function CheckoutPage() {
     const taxValue = subtotalValue * 0.18;
     const totalValue = Math.max(
       0,
-      subtotalValue + shippingValue + taxValue - discountValue
+      subtotalValue + shippingValue + taxValue - discountValue,
     );
 
     return {
@@ -243,20 +249,21 @@ export default function CheckoutPage() {
       const token = localStorage.getItem("token");
 
       const orderPayload = {
-        billing_address: billing,
-        shipping_address: shipDifferent ? billing : billing,
         payment_method: paymentMethod,
         notes: orderNotes,
         items: cartItems.map((item) => ({
           product_id: getProductId(item),
+          product_name: item.name || "Product",
           quantity: getQuantity(item),
-          price: getPrice(item),
+          unit_price: getPrice(item),
         })),
         subtotal,
-        shipping,
+        shipping_cost: shipping,
         discount,
         tax,
         total,
+        billing_address: billing,
+        shipping_address: billing,
       };
 
       if (token) {
@@ -276,7 +283,7 @@ export default function CheckoutPage() {
         const data = await res.json();
         const order = data.data || data.order || data;
 
-        localStorage.removeItem("cart");
+        clearCart();
 
         if (paymentMethod === "card") {
           await createPaymentIntent(order);
@@ -284,11 +291,15 @@ export default function CheckoutPage() {
         }
 
         alert("Order placed successfully!");
-        navigate(`/order-success/${order.id || order.order_number || ""}`);
+        navigate("/success", {
+          state: { orderNumber: order.order_number, order },
+        });
         return;
       }
 
-      const guestOrders = JSON.parse(localStorage.getItem("guestOrders") || "[]");
+      const guestOrders = JSON.parse(
+        localStorage.getItem("guestOrders") || "[]",
+      );
       const guestOrder = {
         ...orderPayload,
         id: Date.now(),
@@ -297,11 +308,14 @@ export default function CheckoutPage() {
         created_at: new Date().toISOString(),
       };
 
-      localStorage.setItem("guestOrders", JSON.stringify([...guestOrders, guestOrder]));
-      localStorage.removeItem("cart");
+      localStorage.setItem(
+        "guestOrders",
+        JSON.stringify([...guestOrders, guestOrder]),
+      );
+      clearCart();
 
       alert("Order placed successfully!");
-      navigate("/order-success");
+      navigate("/success");
     } catch (err) {
       console.error("Place order error:", err);
       setError("Order could not be placed. Please try again.");
@@ -334,11 +348,11 @@ export default function CheckoutPage() {
       const data = await res.json();
 
       alert("Order created. Stripe payment intent created.");
-      navigate(`/order-success/${order.id || data.order_id || ""}`);
+      navigate("/success", { state: { order } });
     } catch (err) {
       console.error("Payment error:", err);
       alert("Order created, but payment could not be initialized.");
-      navigate("/order-success");
+      navigate("/success");
     }
   }
 
@@ -359,44 +373,6 @@ export default function CheckoutPage() {
     setCartOpen(false);
     setWishlistOpen(false);
   };
-
-  const Input = ({ label, field, placeholder, className = "", type = "text" }) => (
-    <div className={className}>
-      <label className="mb-2 block text-xs font-medium text-gray-700">
-        {label}
-      </label>
-
-      <input
-        type={type}
-        value={billing[field] || ""}
-        onChange={(e) => handleBillingChange(field, e.target.value)}
-        placeholder={placeholder}
-        className="h-11 w-full rounded-sm border border-gray-200 px-3 text-sm outline-none focus:border-orange-400"
-      />
-    </div>
-  );
-
-  const Select = ({ label, field, options }) => (
-    <div>
-      <label className="mb-2 block text-xs font-medium text-gray-700">
-        {label}
-      </label>
-
-      <select
-        value={billing[field] || ""}
-        onChange={(e) => handleBillingChange(field, e.target.value)}
-        className="h-11 w-full rounded-sm border border-gray-200 px-3 text-sm text-gray-700 outline-none focus:border-orange-400"
-      >
-        <option value="">Select...</option>
-
-        {options.map((option) => (
-          <option key={option} value={option}>
-            {option}
-          </option>
-        ))}
-      </select>
-    </div>
-  );
 
   return (
     <div className="min-h-screen bg-white font-sans">
@@ -437,41 +413,92 @@ export default function CheckoutPage() {
           </h2>
 
           <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-            <Input label="First name" field="first_name" placeholder="First name" />
-            <Input label="Last name" field="last_name" placeholder="Last name" />
+            <Input
+              label="First name"
+              field="first_name"
+              placeholder="First name"
+              value={billing.first_name}
+              onChange={handleBillingChange}
+            />
+            <Input
+              label="Last name"
+              field="last_name"
+              placeholder="Last name"
+              value={billing.last_name}
+              onChange={handleBillingChange}
+            />
             <Input
               label="Company Name (Optional)"
               field="company"
               placeholder="Company"
+              value={billing.company}
+              onChange={handleBillingChange}
             />
           </div>
 
           <div className="mt-4">
-            <Input label="Address" field="address" placeholder="Address" />
+            <Input
+              label="Address"
+              field="address"
+              placeholder="Address"
+              value={billing.address}
+              onChange={handleBillingChange}
+            />
           </div>
 
           <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-4">
             <Select
               label="Country"
               field="country"
-              options={["Kosovo", "Albania", "North Macedonia", "Serbia", "Germany"]}
+              options={[
+                "Kosovo",
+                "Albania",
+                "North Macedonia",
+                "Serbia",
+                "Germany",
+              ]}
+              value={billing.country}
+              onChange={handleBillingChange}
             />
             <Select
               label="Region/State"
               field="state"
               options={["Prishtina", "Prizren", "Peja", "Gjilan", "Ferizaj"]}
+              value={billing.state}
+              onChange={handleBillingChange}
             />
             <Select
               label="City"
               field="city"
               options={["Prishtina", "Prizren", "Peja", "Gjilan", "Ferizaj"]}
+              value={billing.city}
+              onChange={handleBillingChange}
             />
-            <Input label="Zip Code" field="zip_code" placeholder="10000" />
+            <Input
+              label="Zip Code"
+              field="zip_code"
+              placeholder="10000"
+              value={billing.zip_code}
+              onChange={handleBillingChange}
+            />
           </div>
 
           <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
-            <Input label="Email" field="email" placeholder="email@example.com" type="email" />
-            <Input label="Phone Number" field="phone" placeholder="+383..." />
+            <Input
+              label="Email"
+              field="email"
+              placeholder="email@example.com"
+              type="email"
+              value={billing.email}
+              onChange={handleBillingChange}
+            />
+            <Input
+              label="Phone Number"
+              field="phone"
+              placeholder="+383..."
+              value={billing.phone}
+              onChange={handleBillingChange}
+            />
           </div>
 
           <label className="mt-5 flex items-center gap-2 text-sm text-gray-600">
@@ -570,7 +597,7 @@ export default function CheckoutPage() {
             <div className="py-10 text-center">
               <p className="text-sm text-gray-500">Your cart is empty.</p>
               <Link
-                to="/shop"
+                to="/shop-page"
                 className="mt-4 inline-block bg-orange-500 px-5 py-3 text-xs font-semibold uppercase text-white"
               >
                 Go to shop
@@ -586,7 +613,9 @@ export default function CheckoutPage() {
                   return (
                     <div key={productId} className="flex gap-3">
                       <img
-                        src={getImageUrl(item.image || getProductImage(product))}
+                        src={getImageUrl(
+                          item.image || getProductImage(product),
+                        )}
                         alt={item.name}
                         className="h-14 w-14 rounded object-contain"
                       />

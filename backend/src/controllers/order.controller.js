@@ -17,16 +17,62 @@ module.exports = {
         discount = 0,
         tax = 0,
         total,
-        shipping_address_id,
-        billing_address_id,
         payment_method,
         notes,
+        billing_address,
+        shipping_address,
       } = req.body;
 
       if (!items || items.length === 0) {
         return res
           .status(400)
           .json({ success: false, message: "Porosia s'ka produkte" });
+      }
+
+      // Krijo adresen e faturimit nese eshte dhene
+      let billingAddressId = null;
+      let shippingAddressId = null;
+
+      if (billing_address && billing_address.address) {
+        const fullName =
+          `${billing_address.first_name || ""} ${billing_address.last_name || ""}`.trim();
+        const createdBilling = await prisma.address.create({
+          data: {
+            user_id: userId,
+            label: "Billing",
+            full_name: fullName || "Customer",
+            phone: billing_address.phone || null,
+            street: billing_address.address,
+            city: billing_address.city || "",
+            state: billing_address.state || null,
+            zip_code: billing_address.zip_code || "",
+            country: billing_address.country || "",
+            created_by: userId,
+          },
+        });
+        billingAddressId = createdBilling.id;
+      }
+
+      if (shipping_address && shipping_address.address) {
+        const fullNameS =
+          `${shipping_address.first_name || ""} ${shipping_address.last_name || ""}`.trim();
+        const createdShipping = await prisma.address.create({
+          data: {
+            user_id: userId,
+            label: "Shipping",
+            full_name: fullNameS || "Customer",
+            phone: shipping_address.phone || null,
+            street: shipping_address.address,
+            city: shipping_address.city || "",
+            state: shipping_address.state || null,
+            zip_code: shipping_address.zip_code || "",
+            country: shipping_address.country || "",
+            created_by: userId,
+          },
+        });
+        shippingAddressId = createdShipping.id;
+      } else {
+        shippingAddressId = billingAddressId;
       }
 
       const order = await prisma.order.create({
@@ -39,8 +85,8 @@ module.exports = {
           discount,
           tax,
           total,
-          shipping_address_id: shipping_address_id || null,
-          billing_address_id: billing_address_id || null,
+          shipping_address_id: shippingAddressId,
+          billing_address_id: billingAddressId,
           payment_method: payment_method || null,
           notes: notes || null,
           created_by: userId,

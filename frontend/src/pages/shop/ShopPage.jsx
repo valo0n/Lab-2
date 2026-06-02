@@ -1,4 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useCart } from "../../context/CartContext";
+import { useWishlist } from "../../context/WishlistContext";
 import TopBar from "../../components/layout/TopBar";
 import Header from "../../components/layout/Header";
 import Navigation from "../../components/layout/Navigation";
@@ -9,6 +12,28 @@ const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 const SERVER_URL = API_URL.replace("/api", "");
 
 export default function ShopPage() {
+  const navigate = useNavigate();
+  const { addToCart } = useCart();
+  const { addToWishlist } = useWishlist();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [cartOpen, setCartOpen] = useState(false);
+  const [wishlistOpen, setWishlistOpen] = useState(false);
+  const [accountOpen, setAccountOpen] = useState(false);
+  const toggleCart = () => {
+    setCartOpen((v) => !v);
+    setWishlistOpen(false);
+    setAccountOpen(false);
+  };
+  const toggleWishlist = () => {
+    setWishlistOpen((v) => !v);
+    setCartOpen(false);
+    setAccountOpen(false);
+  };
+  const toggleAccount = () => {
+    setAccountOpen((v) => !v);
+    setCartOpen(false);
+    setWishlistOpen(false);
+  };
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [brands, setBrands] = useState([]);
@@ -155,7 +180,9 @@ export default function ShopPage() {
   };
 
   const getReviewCount = (product) => {
-    return product.review_count || product.reviews || product._count?.reviews || 0;
+    return (
+      product.review_count || product.reviews || product._count?.reviews || 0
+    );
   };
 
   const handleCategoryChange = (categoryId) => {
@@ -186,7 +213,9 @@ export default function ShopPage() {
 
   const addToLocalStorageList = (key, product) => {
     const oldItems = JSON.parse(localStorage.getItem(key) || "[]");
-    const exists = oldItems.some((item) => String(item.id) === String(product.id));
+    const exists = oldItems.some(
+      (item) => String(item.id) === String(product.id),
+    );
 
     if (!exists) {
       localStorage.setItem(key, JSON.stringify([...oldItems, product]));
@@ -194,7 +223,7 @@ export default function ShopPage() {
   };
 
   const handleAddToWishlist = (product) => {
-    addToLocalStorageList("wishlist", product);
+    addToWishlist(product);
     alert("Product added to wishlist");
   };
 
@@ -204,11 +233,15 @@ export default function ShopPage() {
   };
 
   const handleAddToCart = async (product) => {
+    addToCart(product);
+    alert("Product added to cart");
     const token = localStorage.getItem("token");
 
     if (!token) {
       const oldCart = JSON.parse(localStorage.getItem("cart") || "[]");
-      const existing = oldCart.find((item) => String(item.id) === String(product.id));
+      const existing = oldCart.find(
+        (item) => String(item.id) === String(product.id),
+      );
 
       let newCart;
 
@@ -216,7 +249,7 @@ export default function ShopPage() {
         newCart = oldCart.map((item) =>
           String(item.id) === String(product.id)
             ? { ...item, quantity: (item.quantity || 1) + 1 }
-            : item
+            : item,
         );
       } else {
         newCart = [...oldCart, { ...product, quantity: 1 }];
@@ -278,8 +311,19 @@ export default function ShopPage() {
   return (
     <div className="min-h-screen bg-gray-50 font-sans">
       <TopBar />
-      <Header />
-      <Navigation />
+      <Header
+        onMenuClick={() => setMobileMenuOpen(true)}
+        cartOpen={cartOpen}
+        onCartToggle={toggleCart}
+        wishlistOpen={wishlistOpen}
+        onWishlistToggle={toggleWishlist}
+        accountOpen={accountOpen}
+        onAccountToggle={toggleAccount}
+      />
+      <Navigation
+        mobileOpen={mobileMenuOpen}
+        onMobileClose={() => setMobileMenuOpen(false)}
+      />
 
       <div className="bg-gray-100">
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center gap-2 text-sm text-gray-500">
@@ -316,8 +360,12 @@ export default function ShopPage() {
                       <input
                         type="radio"
                         name="cat"
-                        checked={String(selectedCategory) === String(category.id)}
-                        onChange={() => handleCategoryChange(String(category.id))}
+                        checked={
+                          String(selectedCategory) === String(category.id)
+                        }
+                        onChange={() =>
+                          handleCategoryChange(String(category.id))
+                        }
                         className="accent-orange-500"
                       />
                       {category.name}
@@ -423,21 +471,27 @@ export default function ShopPage() {
 
             <FilterSection title="POPULAR TAG">
               <div className="flex flex-wrap gap-2">
-                {["Game", "Phone", "TV", "Laptop", "SSD", "Graphics Card", "Power Bank"].map(
-                  (tag) => (
-                    <button
-                      key={tag}
-                      type="button"
-                      onClick={() => {
-                        setSearch(tag);
-                        setPage(1);
-                      }}
-                      className="border px-3 py-1 text-xs text-gray-600 hover:border-orange-500 hover:text-orange-500"
-                    >
-                      {tag}
-                    </button>
-                  )
-                )}
+                {[
+                  "Game",
+                  "Phone",
+                  "TV",
+                  "Laptop",
+                  "SSD",
+                  "Graphics Card",
+                  "Power Bank",
+                ].map((tag) => (
+                  <button
+                    key={tag}
+                    type="button"
+                    onClick={() => {
+                      setSearch(tag);
+                      setPage(1);
+                    }}
+                    className="border px-3 py-1 text-xs text-gray-600 hover:border-orange-500 hover:text-orange-500"
+                  >
+                    {tag}
+                  </button>
+                ))}
               </div>
             </FilterSection>
 
@@ -455,7 +509,8 @@ export default function ShopPage() {
                 Heavy on Features. Light on Price.
               </h3>
               <p className="text-sm text-gray-500 my-2">
-                Only for: <span className="bg-yellow-300 px-2 py-1">$299 USD</span>
+                Only for:{" "}
+                <span className="bg-yellow-300 px-2 py-1">$299 USD</span>
               </p>
               <button className="w-full bg-orange-500 text-white py-3 text-sm font-semibold mt-3">
                 SHOP NOW
@@ -472,7 +527,10 @@ export default function ShopPage() {
                   onChange={(e) => setSearch(e.target.value)}
                   className="w-full border border-gray-200 h-11 px-4 pr-10 text-sm outline-none"
                 />
-                <Search size={18} className="absolute right-3 top-3 text-gray-500" />
+                <Search
+                  size={18}
+                  className="absolute right-3 top-3 text-gray-500"
+                />
               </div>
 
               <div className="flex items-center gap-3">
@@ -501,13 +559,14 @@ export default function ShopPage() {
                   {activeCategoryName}
                   {selectedBrand &&
                     ` / ${
-                      brands.find((b) => String(b.id) === String(selectedBrand))?.name ||
-                      "Brand"
+                      brands.find((b) => String(b.id) === String(selectedBrand))
+                        ?.name || "Brand"
                     }`}
                 </b>
               </span>
               <span className="text-gray-600">
-                <b className="text-gray-900">{meta.total || products.length}</b> Results found.
+                <b className="text-gray-900">{meta.total || products.length}</b>{" "}
+                Results found.
               </span>
             </div>
 
@@ -518,9 +577,13 @@ export default function ShopPage() {
             )}
 
             {loading ? (
-              <p className="text-center py-10 text-gray-500">Loading products...</p>
+              <p className="text-center py-10 text-gray-500">
+                Loading products...
+              </p>
             ) : products.length === 0 ? (
-              <p className="text-center py-10 text-gray-500">No products found.</p>
+              <p className="text-center py-10 text-gray-500">
+                No products found.
+              </p>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
                 {products.map((product) => {
@@ -530,37 +593,63 @@ export default function ShopPage() {
                   return (
                     <div
                       key={product._id || product.id}
-                      className="border border-gray-200 p-3 relative group bg-white"
+                      className="group relative bg-white border border-gray-200 p-3 sm:p-4 hover:shadow-lg transition-all"
                     >
                       {product.badge && (
                         <span className="absolute top-3 left-3 bg-orange-500 text-white text-[10px] font-semibold px-2 py-1 z-10">
                           {product.badge}
                         </span>
                       )}
-
                       {product.is_featured && !product.badge && (
                         <span className="absolute top-3 left-3 bg-blue-500 text-white text-[10px] font-semibold px-2 py-1 z-10">
                           FEATURED
                         </span>
                       )}
 
-                      <a
-                        href={`/products/${product.slug || product.id}`}
-                        className="h-40 flex items-center justify-center mb-3"
+                      {/* Butonat lart-djathtas */}
+                      <div className="absolute top-3 right-3 flex flex-col gap-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity z-10">
+                        <button
+                          type="button"
+                          onClick={() => handleAddToWishlist(product)}
+                          className="w-8 h-8 bg-white border border-gray-200 rounded-full flex items-center justify-center hover:bg-orange-500 hover:text-white hover:border-orange-500 transition-colors"
+                          title="Add to wishlist"
+                        >
+                          <Heart size={14} />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() =>
+                            navigate(`/products/${product.slug || product.id}`)
+                          }
+                          className="w-8 h-8 bg-white border border-gray-200 rounded-full flex items-center justify-center hover:bg-orange-500 hover:text-white hover:border-orange-500 transition-colors"
+                          title="View product"
+                        >
+                          <Eye size={14} />
+                        </button>
+                      </div>
+
+                      {/* Foto */}
+                      <div
+                        onClick={() =>
+                          navigate(`/products/${product.slug || product.id}`)
+                        }
+                        className="h-40 flex items-center justify-center mb-3 cursor-pointer"
                       >
                         <img
                           src={getImageUrl(getPrimaryImage(product))}
                           alt={product.name}
                           className="max-h-full object-contain"
                         />
-                      </a>
+                      </div>
 
                       <div className="flex text-orange-400 mb-2">
                         {[1, 2, 3, 4, 5].map((i) => (
                           <Star
                             key={i}
                             size={13}
-                            fill={i <= Math.round(rating) ? "currentColor" : "none"}
+                            fill={
+                              i <= Math.round(rating) ? "currentColor" : "none"
+                            }
                           />
                         ))}
                         <span className="text-gray-400 text-xs ml-1">
@@ -568,44 +657,27 @@ export default function ShopPage() {
                         </span>
                       </div>
 
-                      <a href={`/products/${product.slug || product.id}`}>
-                        <h3 className="text-sm text-gray-800 leading-5 min-h-[42px] hover:text-orange-500">
-                          {product.name}
-                        </h3>
-                      </a>
+                      <h3
+                        onClick={() =>
+                          navigate(`/products/${product.slug || product.id}`)
+                        }
+                        className="text-sm text-gray-800 leading-5 min-h-[42px] hover:text-orange-500 cursor-pointer"
+                      >
+                        {product.name}
+                      </h3>
 
                       <p className="text-sm font-semibold text-blue-500 mt-2">
                         ${Number(product.price || 0).toFixed(2)}
                       </p>
 
-                      <div className="absolute inset-0 bg-white/70 hidden group-hover:flex items-center justify-center gap-2">
-                        <button
-                          type="button"
-                          onClick={() => handleAddToWishlist(product)}
-                          className="w-9 h-9 rounded-full bg-white shadow flex items-center justify-center hover:bg-orange-500 hover:text-white"
-                          title="Add to wishlist"
-                        >
-                          <Heart size={16} />
-                        </button>
-
-                        <button
-                          type="button"
-                          onClick={() => handleAddToCart(product)}
-                          className="w-10 h-10 rounded-full bg-orange-500 text-white shadow flex items-center justify-center"
-                          title="Add to cart"
-                        >
-                          <ShoppingCart size={17} />
-                        </button>
-
-                        <button
-                          type="button"
-                          onClick={() => handleAddToCompare(product)}
-                          className="w-9 h-9 rounded-full bg-white shadow flex items-center justify-center hover:bg-orange-500 hover:text-white"
-                          title="Add to compare"
-                        >
-                          <Eye size={16} />
-                        </button>
-                      </div>
+                      <button
+                        type="button"
+                        onClick={() => handleAddToCart(product)}
+                        className="w-full mt-3 bg-orange-50 text-orange-500 text-xs font-bold py-2 rounded opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity hover:bg-orange-500 hover:text-white flex items-center justify-center gap-2"
+                      >
+                        <ShoppingCart size={14} />
+                        ADD TO CART
+                      </button>
                     </div>
                   );
                 })}
@@ -642,7 +714,9 @@ export default function ShopPage() {
                   type="button"
                   disabled={page >= meta.totalPages}
                   onClick={() =>
-                    setPage((prev) => Math.min(Number(meta.totalPages || 1), prev + 1))
+                    setPage((prev) =>
+                      Math.min(Number(meta.totalPages || 1), prev + 1),
+                    )
                   }
                   className="w-9 h-9 border rounded-full text-orange-500 disabled:opacity-40"
                 >

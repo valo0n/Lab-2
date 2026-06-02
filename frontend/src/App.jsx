@@ -53,16 +53,16 @@ function App() {
           <Routes>
             {/* Home */}
             <Route path="/" element={<HomePage />} />
-
             {/* Shop */}
             <Route path="/shop-page" element={<ShopPage />} />
-            <Route path="/product-details" element={<ProductDetailsPage />} />
+            <Route
+              path="/products/:slug"
+              element={<ProductDetailsPage />}
+            />{" "}
             <Route path="/compare" element={<ComparePage />} />
-
             {/* Cart & Checkout */}
             <Route path="/cart" element={<ShoppingCartPage />} />
             <Route path="/checkout" element={<CheckoutPage />} />
-
             {/* Auth */}
             <Route path="/signin" element={<SignInPage />} />
             <Route path="/signup" element={<SignUpPage />} />
@@ -72,7 +72,6 @@ function App() {
               path="/email-verification"
               element={<EmailVerificationPage />}
             />
-
             {/* Account */}
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/customer" element={<CustomerPage />} />
@@ -87,16 +86,13 @@ function App() {
             <Route path="/cards-address" element={<CardsAddressPage />} />
             <Route path="/browsing-history" element={<BrowsingHistoryPage />} />
             <Route path="/settings" element={<SettingsPage />} />
-
             {/* Info */}
             <Route path="/about-us" element={<AboutUsPage />} />
             <Route path="/blog" element={<BlogPage />} />
             <Route path="/faqs" element={<FAQsPage />} />
             <Route path="/blog-detail" element={<BlogDetailPage />} />
-            
             {/* Order */}
             <Route path="/success" element={<SuccessPage />} />
-
             {/* 404 */}
             <Route path="/404" element={<NotFoundPage />} />
             <Route path="*" element={<NotFoundPage />} />
