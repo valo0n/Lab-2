@@ -1,5 +1,6 @@
 const { PrismaClient } = require("@prisma/client");
 const { hashPassword } = require("../src/utils/hash");
+const { imageForProduct } = require("./product-images");
 require("dotenv").config();
 
 const prisma = new PrismaClient();
@@ -591,11 +592,11 @@ async function seed() {
       },
     });
 
-    // Add primary image (emoji placeholder)
+    // Add primary image (URL reale sipas emrit te produktit)
     await prisma.productImage.create({
       data: {
         product_id: created.id,
-        image_url: p.image,
+        image_url: imageForProduct(p.name),
         is_primary: true,
         sort_order: 0,
       },
