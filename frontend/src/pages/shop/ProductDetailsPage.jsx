@@ -59,7 +59,7 @@ function addToLocalStorageList(key, product) {
   const productId = getProductId(product);
 
   const exists = oldItems.some(
-    (item) => String(getProductId(item)) === String(productId)
+    (item) => String(getProductId(item)) === String(productId),
   );
 
   if (!exists) {
@@ -151,21 +151,21 @@ export default function ProductDetailsPage() {
         ? productData.variants
         : [];
 
-      const colors =
-        productData.colors ||
-        [...new Set(variants.map((v) => v.color).filter(Boolean))];
+      const colors = productData.colors || [
+        ...new Set(variants.map((v) => v.color).filter(Boolean)),
+      ];
 
-      const sizes =
-        productData.sizes ||
-        [...new Set(variants.map((v) => v.size).filter(Boolean))];
+      const sizes = productData.sizes || [
+        ...new Set(variants.map((v) => v.size).filter(Boolean)),
+      ];
 
-      const memories =
-        productData.memoryOptions ||
-        [...new Set(variants.map((v) => v.memory).filter(Boolean))];
+      const memories = productData.memoryOptions || [
+        ...new Set(variants.map((v) => v.memory).filter(Boolean)),
+      ];
 
-      const storages =
-        productData.storageOptions ||
-        [...new Set(variants.map((v) => v.storage).filter(Boolean))];
+      const storages = productData.storageOptions || [
+        ...new Set(variants.map((v) => v.storage).filter(Boolean)),
+      ];
 
       setSelectedColor(colors[0] || "");
       setSelectedSize(sizes[0] || "");
@@ -191,11 +191,14 @@ export default function ProductDetailsPage() {
         return;
       }
 
-      const relatedRes = await fetch(`${API_URL}/products/${productId}/related`);
+      const relatedRes = await fetch(
+        `${API_URL}/products/${productId}/related`,
+      );
 
       if (relatedRes.ok) {
         const relatedData = await relatedRes.json();
-        const related = relatedData.products || relatedData.data || relatedData || [];
+        const related =
+          relatedData.products || relatedData.data || relatedData || [];
 
         if (Array.isArray(related)) {
           setRelatedProducts(related);
@@ -219,8 +222,9 @@ export default function ProductDetailsPage() {
 
         setRelatedProducts(
           list.filter(
-            (item) => String(getProductId(item)) !== String(getProductId(productData))
-          )
+            (item) =>
+              String(getProductId(item)) !== String(getProductId(productData)),
+          ),
         );
       } catch (fallbackError) {
         console.error("Error fetching related products:", fallbackError);
@@ -333,7 +337,7 @@ export default function ProductDetailsPage() {
       const productId = getProductId(product);
 
       const exists = oldCart.find(
-        (item) => String(getProductId(item)) === String(productId)
+        (item) => String(getProductId(item)) === String(productId),
       );
 
       let newCart;
@@ -342,7 +346,7 @@ export default function ProductDetailsPage() {
         newCart = oldCart.map((item) =>
           String(getProductId(item)) === String(productId)
             ? { ...item, quantity: Number(item.quantity || 1) + quantity }
-            : item
+            : item,
         );
       } else {
         newCart = [...oldCart, { ...product, quantity }];
@@ -426,12 +430,17 @@ export default function ProductDetailsPage() {
   }, [product]);
 
   const memoryOptions = useMemo(() => {
-    if (Array.isArray(product?.memoryOptions) && product.memoryOptions.length > 0) {
+    if (
+      Array.isArray(product?.memoryOptions) &&
+      product.memoryOptions.length > 0
+    ) {
       return product.memoryOptions;
     }
 
     if (Array.isArray(product?.variants)) {
-      return [...new Set(product.variants.map((v) => v.memory).filter(Boolean))];
+      return [
+        ...new Set(product.variants.map((v) => v.memory).filter(Boolean)),
+      ];
     }
 
     return [];
@@ -446,7 +455,9 @@ export default function ProductDetailsPage() {
     }
 
     if (Array.isArray(product?.variants)) {
-      return [...new Set(product.variants.map((v) => v.storage).filter(Boolean))];
+      return [
+        ...new Set(product.variants.map((v) => v.storage).filter(Boolean)),
+      ];
     }
 
     return [];
@@ -458,7 +469,9 @@ export default function ProductDetailsPage() {
         <TopBar />
         <Header />
         <Navigation />
-        <div className="py-20 text-center text-gray-500">Loading product...</div>
+        <div className="py-20 text-center text-gray-500">
+          Loading product...
+        </div>
         <Footer />
       </div>
     );
@@ -473,7 +486,7 @@ export default function ProductDetailsPage() {
         <div className="py-20 text-center">
           <p className="text-gray-500">{error || "Product not found."}</p>
           <Link
-            to="/shop"
+            to="/shop-page"
             className="mt-4 inline-block rounded bg-orange-500 px-5 py-2 text-sm font-semibold text-white"
           >
             Back to shop
@@ -577,15 +590,19 @@ export default function ProductDetailsPage() {
 
             <div className="mt-5 flex items-center gap-3">
               <span className="text-3xl font-bold text-sky-600">
-                {formatPrice(product.salePrice || product.sale_price || product.price)}
+                {formatPrice(
+                  product.salePrice || product.sale_price || product.price,
+                )}
               </span>
 
-              {(product.oldPrice || product.old_price || product.compare_at_price) && (
+              {(product.oldPrice ||
+                product.old_price ||
+                product.compare_at_price) && (
                 <span className="text-lg text-gray-400 line-through">
                   {formatPrice(
                     product.oldPrice ||
                       product.old_price ||
-                      product.compare_at_price
+                      product.compare_at_price,
                   )}
                 </span>
               )}
@@ -766,7 +783,9 @@ export default function ProductDetailsPage() {
                 <span className="rounded bg-white px-2 py-1 border">
                   MasterCard
                 </span>
-                <span className="rounded bg-white px-2 py-1 border">PayPal</span>
+                <span className="rounded bg-white px-2 py-1 border">
+                  PayPal
+                </span>
                 <span className="rounded bg-white px-2 py-1 border">Amex</span>
               </div>
             </div>
@@ -776,22 +795,25 @@ export default function ProductDetailsPage() {
         <section className="mt-8 bg-white p-6 shadow-sm">
           <div className="border-b border-gray-200">
             <div className="flex flex-wrap gap-6 text-sm font-medium uppercase tracking-wide">
-              {["description", "additional information", "specification", "review"].map(
-                (tab) => (
-                  <button
-                    key={tab}
-                    type="button"
-                    onClick={() => setActiveTab(tab)}
-                    className={`border-b-2 pb-3 ${
-                      activeTab === tab
-                        ? "border-orange-500 text-orange-500"
-                        : "border-transparent text-gray-500"
-                    }`}
-                  >
-                    {tab}
-                  </button>
-                )
-              )}
+              {[
+                "description",
+                "additional information",
+                "specification",
+                "review",
+              ].map((tab) => (
+                <button
+                  key={tab}
+                  type="button"
+                  onClick={() => setActiveTab(tab)}
+                  className={`border-b-2 pb-3 ${
+                    activeTab === tab
+                      ? "border-orange-500 text-orange-500"
+                      : "border-transparent text-gray-500"
+                  }`}
+                >
+                  {tab}
+                </button>
+              ))}
             </div>
           </div>
 
@@ -802,7 +824,8 @@ export default function ProductDetailsPage() {
               </h3>
 
               <p className="text-sm leading-7 text-gray-600">
-                {product.description || "No description available for this product."}
+                {product.description ||
+                  "No description available for this product."}
               </p>
 
               {(product.longDescription || product.long_description) && (
@@ -840,11 +863,13 @@ export default function ProductDetailsPage() {
 
               <div className="space-y-3 text-sm text-gray-600">
                 <p>
-                  <span className="font-medium text-gray-800">Courier:</span> 2-4
-                  days, free shipping
+                  <span className="font-medium text-gray-800">Courier:</span>{" "}
+                  2-4 days, free shipping
                 </p>
                 <p>
-                  <span className="font-medium text-gray-800">Local Shipping:</span>{" "}
+                  <span className="font-medium text-gray-800">
+                    Local Shipping:
+                  </span>{" "}
                   up to one week, $19.00
                 </p>
                 <p>

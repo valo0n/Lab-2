@@ -25,8 +25,10 @@ export default function ProductCard({ product, onQuickView }) {
   const handleQuickView = () => {
     if (onQuickView) {
       onQuickView(product);
+    } else if (product.slug) {
+      navigate(`/products/${product.slug}`);
     } else {
-      navigate("/product-details");
+      navigate("/shop-page");
     }
   };
 

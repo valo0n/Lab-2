@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 export default function TwoSideBanners() {
   return (
     <section className="max-w-7xl mx-auto px-3 sm:px-4 py-4 sm:py-6">
@@ -18,9 +19,12 @@ export default function TwoSideBanners() {
               <br />
               HomePod mini delivers a powerful sound.
             </p>
-            <button className="bg-primary hover:bg-primary-600 text-white text-[10px] sm:text-xs font-bold px-3 sm:px-4 py-1.5 sm:py-2 rounded">
+            <Link
+              to="/shop-page"
+              className="bg-primary hover:bg-primary-600 text-white text-[10px] sm:text-xs font-bold px-3 sm:px-4 py-1.5 sm:py-2 rounded inline-block"
+            >
               SHOP NOW →
-            </button>
+            </Link>
           </div>
           <div className="absolute right-4 sm:right-8 top-1/2 -translate-y-1/2 w-20 h-20 sm:w-32 sm:h-32 bg-white rounded-full flex items-center justify-center text-4xl sm:text-6xl shadow-card">
             🔊
@@ -43,9 +47,12 @@ export default function TwoSideBanners() {
               <br />
               expensive phone with snapdragon 888.
             </p>
-            <button className="bg-primary hover:bg-primary-600 text-white text-[10px] sm:text-xs font-bold px-3 sm:px-4 py-1.5 sm:py-2 rounded">
+            <Link
+              to="/shop-page"
+              className="bg-primary hover:bg-primary-600 text-white text-[10px] sm:text-xs font-bold px-3 sm:px-4 py-1.5 sm:py-2 rounded inline-block"
+            >
               SHOP NOW →
-            </button>
+            </Link>
           </div>
           <div className="absolute right-3 sm:right-6 top-3 sm:top-4 w-12 h-12 sm:w-16 sm:h-16 bg-info rounded-full flex items-center justify-center font-bold text-xs sm:text-sm">
             $590

@@ -33,6 +33,9 @@ import CardsAddressPage from "./pages/account/CardsAddressPage";
 import BrowsingHistoryPage from "./pages/account/BrowsingHistoryPage";
 import SettingsPage from "./pages/account/SettingsPage";
 
+// Admin
+import AdminDashboard from "./pages/admin/AdminDashboard";
+
 // Info
 import AboutUsPage from "./pages/info/AboutUsPage";
 import BlogPage from "./pages/info/BlogPage";
@@ -86,6 +89,8 @@ function App() {
             <Route path="/cards-address" element={<CardsAddressPage />} />
             <Route path="/browsing-history" element={<BrowsingHistoryPage />} />
             <Route path="/settings" element={<SettingsPage />} />
+            {/* Admin */}
+            <Route path="/admin" element={<AdminDashboard />} />
             {/* Info */}
             <Route path="/about-us" element={<AboutUsPage />} />
             <Route path="/blog" element={<BlogPage />} />

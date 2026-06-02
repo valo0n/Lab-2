@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { useState } from "react";
 import { FiChevronRight } from "react-icons/fi";
 
@@ -262,9 +263,12 @@ export default function MegaMenu({ isOpen, onClose }) {
                     Starting price:{" "}
                     <span className="font-bold text-dark">$99 USD</span>
                   </p>
-                  <button className="bg-primary hover:bg-primary-600 text-white text-xs font-bold px-4 py-2 rounded transition-colors">
+                  <Link
+                    to="/shop-page"
+                    className="bg-primary hover:bg-primary-600 text-white text-xs font-bold px-4 py-2 rounded transition-colors inline-block"
+                  >
                     SHOP NOW →
-                  </button>
+                  </Link>
                 </div>
               </div>
             </div>

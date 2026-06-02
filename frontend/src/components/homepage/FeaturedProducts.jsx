@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
 import ProductCard from "../common/ProductCard";
 import { productService } from "../../services/productService";
@@ -90,9 +91,12 @@ export default function FeaturedProducts({ onQuickView }) {
               For all electronics products
             </p>
           </div>
-          <button className="bg-dark text-white text-[10px] sm:text-xs font-bold px-3 py-1.5 rounded self-end lg:self-start lg:mt-4">
+          <Link
+            to="/shop-page"
+            className="bg-dark text-white text-[10px] sm:text-xs font-bold px-3 py-1.5 rounded self-end lg:self-start lg:mt-4 inline-block"
+          >
             SHOP NOW →
-          </button>
+          </Link>
         </div>
 
         {loading ? (

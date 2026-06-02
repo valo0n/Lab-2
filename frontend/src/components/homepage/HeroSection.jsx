@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 export default function HeroSection() {
   return (
     <section className="max-w-7xl mx-auto px-3 sm:px-4 py-4 sm:py-6">
@@ -15,9 +16,12 @@ export default function HeroSection() {
               Save up to 50% on select Xbox games. Get 3 months of PC Game Pass
               for $2 USD.
             </p>
-            <button className="bg-primary hover:bg-primary-600 text-white font-bold px-4 sm:px-6 py-2 sm:py-3 rounded text-xs sm:text-sm transition-colors">
+            <Link
+              to="/shop-page"
+              className="bg-primary hover:bg-primary-600 text-white font-bold px-4 sm:px-6 py-2 sm:py-3 rounded text-xs sm:text-sm transition-colors inline-block"
+            >
               SHOP NOW →
-            </button>
+            </Link>
           </div>
 
           <div className="absolute top-4 right-4 sm:top-8 sm:right-12 w-14 h-14 sm:w-20 sm:h-20 bg-info rounded-full flex items-center justify-center text-white font-bold text-sm sm:text-lg shadow-lg">
@@ -45,9 +49,12 @@ export default function HeroSection() {
               <br />
               Pixel 6 Pro
             </h3>
-            <button className="bg-primary hover:bg-primary-600 text-white text-[10px] sm:text-xs font-bold px-2 sm:px-3 py-1 sm:py-1.5 rounded">
+            <Link
+              to="/shop-page"
+              className="bg-primary hover:bg-primary-600 text-white text-[10px] sm:text-xs font-bold px-2 sm:px-3 py-1 sm:py-1.5 rounded inline-block"
+            >
               SHOP NOW →
-            </button>
+            </Link>
             <div className="absolute -top-4 -right-4 w-20 h-20 sm:w-24 sm:h-24 bg-white/10 rounded-full" />
             <div className="absolute top-2 right-2 text-[9px] sm:text-xs font-bold bg-warning text-dark px-1.5 sm:px-2 py-0.5 rounded">
               -25% OFF
@@ -64,9 +71,12 @@ export default function HeroSection() {
             <p className="text-primary font-bold text-[10px] sm:text-xs mb-2 sm:mb-3">
               $299 USD
             </p>
-            <button className="bg-primary hover:bg-primary-600 text-white text-[10px] sm:text-xs font-bold px-2 sm:px-3 py-1 sm:py-1.5 rounded">
+            <Link
+              to="/shop-page"
+              className="bg-primary hover:bg-primary-600 text-white text-[10px] sm:text-xs font-bold px-2 sm:px-3 py-1 sm:py-1.5 rounded inline-block"
+            >
               SHOP NOW →
-            </button>
+            </Link>
             <div className="absolute -top-2 -right-2 w-16 h-16 sm:w-20 sm:h-20 bg-gray-50 rounded-full" />
           </div>
         </div>

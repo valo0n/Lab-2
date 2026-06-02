@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 export default function MacBookProBanner() {
   return (
     <section className="max-w-7xl mx-auto px-3 sm:px-4 py-4 sm:py-6">
@@ -18,9 +19,12 @@ export default function MacBookProBanner() {
           <p className="text-dark text-lg sm:text-2xl font-bold mb-2 sm:mb-4">
             $1099 USD
           </p>
-          <button className="bg-primary hover:bg-primary-600 text-white font-bold px-4 sm:px-6 py-2 sm:py-3 rounded text-[10px] sm:text-sm">
+          <Link
+            to="/shop-page"
+            className="bg-primary hover:bg-primary-600 text-white font-bold px-4 sm:px-6 py-2 sm:py-3 rounded text-[10px] sm:text-sm inline-block"
+          >
             SHOP NOW →
-          </button>
+          </Link>
         </div>
 
         {/* MacBook visual */}

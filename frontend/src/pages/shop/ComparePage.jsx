@@ -90,7 +90,9 @@ function getStockColor(product) {
 }
 
 function getRating(product) {
-  return Number(product?.avg_rating || product?.rating || product?.averageRating || 0);
+  return Number(
+    product?.avg_rating || product?.rating || product?.averageRating || 0,
+  );
 }
 
 function getReviewCount(product) {
@@ -109,7 +111,7 @@ function addToLocalStorageList(key, product) {
   const productId = getProductId(product);
 
   const exists = oldItems.some(
-    (item) => String(getProductId(item)) === String(productId)
+    (item) => String(getProductId(item)) === String(productId),
   );
 
   if (!exists) {
@@ -149,7 +151,8 @@ export default function ComparePage() {
 
           if (res.ok) {
             const data = await res.json();
-            const backendProducts = data.data || data.products || data.compare || [];
+            const backendProducts =
+              data.data || data.products || data.compare || [];
 
             if (Array.isArray(backendProducts) && backendProducts.length > 0) {
               const normalizedProducts = backendProducts.map((item) => {
@@ -187,7 +190,7 @@ export default function ComparePage() {
 
     setProducts((currentProducts) => {
       const updatedProducts = currentProducts.filter(
-        (product) => String(getProductId(product)) !== String(productId)
+        (product) => String(getProductId(product)) !== String(productId),
       );
 
       localStorage.setItem("compare", JSON.stringify(updatedProducts));
@@ -216,7 +219,7 @@ export default function ComparePage() {
       const oldCart = JSON.parse(localStorage.getItem("cart") || "[]");
 
       const existing = oldCart.find(
-        (item) => String(getProductId(item)) === String(productId)
+        (item) => String(getProductId(item)) === String(productId),
       );
 
       let newCart;
@@ -225,7 +228,7 @@ export default function ComparePage() {
         newCart = oldCart.map((item) =>
           String(getProductId(item)) === String(productId)
             ? { ...item, quantity: Number(item.quantity || 1) + 1 }
-            : item
+            : item,
         );
       } else {
         newCart = [...oldCart, { ...product, quantity: 1 }];
@@ -370,7 +373,7 @@ export default function ComparePage() {
             </p>
 
             <Link
-              to="/shop"
+              to="/shop-page"
               className="mt-5 inline-block bg-orange-500 px-6 py-3 text-sm font-semibold text-white hover:bg-orange-600"
             >
               GO TO SHOP
@@ -465,7 +468,11 @@ export default function ComparePage() {
                         <Star
                           key={star}
                           size={13}
-                          fill={star <= Math.round(rating || 5) ? "currentColor" : "none"}
+                          fill={
+                            star <= Math.round(rating || 5)
+                              ? "currentColor"
+                              : "none"
+                          }
                         />
                       ))}
                     </div>
@@ -488,7 +495,7 @@ export default function ComparePage() {
                     product.salePrice ||
                       product.sale_price ||
                       product.discount_price ||
-                      product.price
+                      product.price,
                   )}
                 </p>
               ))}
