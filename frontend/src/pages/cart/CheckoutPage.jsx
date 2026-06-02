@@ -1,5 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { loadStripe } from "@stripe/stripe-js";
+import {
+  Elements,
+  CardElement,
+  useStripe,
+  useElements,
+} from "@stripe/react-stripe-js";
 import TopBar from "../../components/layout/TopBar";
 import Header from "../../components/layout/Header";
 import Navigation from "../../components/layout/Navigation";
@@ -8,6 +15,21 @@ import { useCart } from "../../context/CartContext";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 const SERVER_URL = API_URL.replace("/api", "");
+
+// Stripe publishable key (test) nga .env — VITE_STRIPE_PUBLISHABLE_KEY=pk_test_...
+const STRIPE_PK = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
+const stripePromise = STRIPE_PK ? loadStripe(STRIPE_PK) : null;
+
+const cardElementOptions = {
+  style: {
+    base: {
+      fontSize: "14px",
+      color: "#1f2937",
+      "::placeholder": { color: "#9ca3af" },
+    },
+    invalid: { color: "#ef4444" },
+  },
+};
 
 function getProductId(item) {
   return (
@@ -147,9 +169,11 @@ function Select({ label, field, options, value, onChange }) {
   );
 }
 
-export default function CheckoutPage() {
+function CheckoutInner() {
   const navigate = useNavigate();
   const { cartItems, clearCart } = useCart();
+  const stripe = useStripe();
+  const elements = useElements();
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
@@ -283,13 +307,13 @@ export default function CheckoutPage() {
         const data = await res.json();
         const order = data.data || data.order || data;
 
-        clearCart();
-
         if (paymentMethod === "card") {
-          await createPaymentIntent(order);
+          // Mos e pastro shportën derisa pagesa të konfirmohet
+          await payWithCard(order);
           return;
         }
 
+        clearCart();
         alert("Order placed successfully!");
         navigate("/success", {
           state: { orderNumber: order.order_number, order },
@@ -324,35 +348,90 @@ export default function CheckoutPage() {
     }
   }
 
-  async function createPaymentIntent(order) {
-    try {
-      const token = localStorage.getItem("token");
+  async function payWithCard(order) {
+    const token = localStorage.getItem("token");
 
+    // 1) Krijo PaymentIntent ne backend dhe merr clientSecret
+    let clientSecret;
+    try {
       const res = await fetch(`${API_URL}/payments/create-intent`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({
-          order_id: order.id,
-          orderId: order.id,
-          amount: total,
-        }),
+        body: JSON.stringify({ order_id: order.id }),
       });
-
+      const data = await res.json().catch(() => ({}));
       if (!res.ok) {
-        throw new Error("Payment intent failed");
+        throw new Error(
+          data?.message || `create-intent dështoi (HTTP ${res.status})`,
+        );
+      }
+      clientSecret = data?.data?.clientSecret;
+    } catch (err) {
+      console.error("create-intent error:", err);
+      setError("Pagesa nuk u inicializua: " + err.message);
+      return;
+    }
+
+    if (!clientSecret) {
+      setError("Pagesa nuk u inicializua (mungon clientSecret).");
+      return;
+    }
+
+    // 2) Nese Stripe nuk eshte konfiguruar, ndalo me mesazh te qarte
+    if (!stripe || !elements) {
+      setError(
+        "Stripe nuk është konfiguruar (mungon VITE_STRIPE_PUBLISHABLE_KEY). Porosia u krijua si e papaguar.",
+      );
+      return;
+    }
+
+    // 3) Konfirmo pagesen me kartën e futur (test card: 4242 4242 4242 4242)
+    const cardElement = elements.getElement(CardElement);
+    const result = await stripe.confirmCardPayment(clientSecret, {
+      payment_method: {
+        card: cardElement,
+        billing_details: {
+          name: `${billing.first_name} ${billing.last_name}`.trim(),
+          email: billing.email,
+          phone: billing.phone,
+        },
+      },
+    });
+
+    if (result.error) {
+      setError(result.error.message || "Pagesa dështoi. Kontrollo kartën.");
+      return;
+    }
+
+    if (result.paymentIntent && result.paymentIntent.status === "succeeded") {
+      // 4) Sinkronizo statusin ne backend (pa u mbeshtetur ne webhook ne dev)
+      try {
+        await fetch(`${API_URL}/payments/confirm`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            order_id: order.id,
+            payment_intent_id: result.paymentIntent.id,
+          }),
+        });
+      } catch (err) {
+        console.error("confirm sync error:", err);
       }
 
-      const data = await res.json();
-
-      alert("Order created. Stripe payment intent created.");
-      navigate("/success", { state: { order } });
-    } catch (err) {
-      console.error("Payment error:", err);
-      alert("Order created, but payment could not be initialized.");
-      navigate("/success");
+      clearCart();
+      navigate("/success", {
+        state: { orderNumber: order.order_number, order },
+      });
+    } else {
+      setError(
+        "Pagesa nuk u kompletua. Statusi: " + result.paymentIntent?.status,
+      );
     }
   }
 
@@ -546,23 +625,24 @@ export default function CheckoutPage() {
             </div>
 
             {paymentMethod === "card" && (
-              <div className="grid grid-cols-1 gap-4 p-6 md:grid-cols-2">
-                <input
-                  placeholder="Name on Card"
-                  className="md:col-span-2 h-11 w-full rounded-sm border border-gray-200 px-3 text-sm outline-none focus:border-orange-400"
-                />
-                <input
-                  placeholder="Card Number"
-                  className="md:col-span-2 h-11 w-full rounded-sm border border-gray-200 px-3 text-sm outline-none focus:border-orange-400"
-                />
-                <input
-                  placeholder="Expire Date DD/YY"
-                  className="h-11 w-full rounded-sm border border-gray-200 px-3 text-sm outline-none focus:border-orange-400"
-                />
-                <input
-                  placeholder="CVC"
-                  className="h-11 w-full rounded-sm border border-gray-200 px-3 text-sm outline-none focus:border-orange-400"
-                />
+              <div className="p-6">
+                <label className="mb-2 block text-xs font-medium text-gray-700">
+                  Card Details
+                </label>
+                <div className="rounded-sm border border-gray-200 px-3 py-3 focus-within:border-orange-400">
+                  <CardElement options={cardElementOptions} />
+                </div>
+                {STRIPE_PK ? (
+                  <p className="mt-2 text-xs text-gray-400">
+                    Test mode — përdor kartën 4242 4242 4242 4242, çdo datë e
+                    ardhshme, çdo CVC.
+                  </p>
+                ) : (
+                  <p className="mt-2 text-xs text-red-500">
+                    Stripe nuk është konfiguruar. Shto
+                    VITE_STRIPE_PUBLISHABLE_KEY në frontend/.env
+                  </p>
+                )}
               </div>
             )}
           </div>
@@ -685,5 +765,13 @@ export default function CheckoutPage() {
 
       <Footer />
     </div>
+  );
+}
+
+export default function CheckoutPage() {
+  return (
+    <Elements stripe={stripePromise}>
+      <CheckoutInner />
+    </Elements>
   );
 }
