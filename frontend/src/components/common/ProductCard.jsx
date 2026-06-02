@@ -75,7 +75,16 @@ export default function ProductCard({ product, onQuickView }) {
         onClick={handleQuickView}
         className="aspect-square bg-gray-50 rounded-lg flex items-center justify-center mb-2 sm:mb-3 overflow-hidden cursor-pointer"
       >
-        <span className="text-3xl sm:text-5xl">{image}</span>
+        {typeof image === "string" && /^(https?:|\/?uploads)/.test(image) ? (
+          <img
+            src={image}
+            alt={name}
+            loading="lazy"
+            className="w-full h-full object-cover"
+          />
+        ) : (
+          <span className="text-3xl sm:text-5xl">{image || "📦"}</span>
+        )}
       </div>
 
       <div className="flex items-center gap-1 mb-1 sm:mb-1.5">

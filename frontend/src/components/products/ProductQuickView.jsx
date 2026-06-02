@@ -90,13 +90,14 @@ export default function ProductQuickView({ isOpen, onClose, product }) {
     ...(product || {}),
   };
 
-  // Sigurohu që images, colors, sizes janë gjithmonë array
-  const images = item.images || [
-    item.image,
-    item.image,
-    item.image,
-    item.image,
-  ];
+  // Sigurohu që images, colors, sizes janë gjithmonë array stringjesh
+  const rawImages =
+    item.images && item.images.length
+      ? item.images
+      : [item.image, item.image, item.image, item.image];
+  const images = rawImages
+    .map((x) => (x && typeof x === "object" ? x.image_url : x))
+    .filter(Boolean);
   const colors = item.colors || defaults.colors;
   const sizes = item.sizes || defaults.sizes;
   const description = item.description || defaults.description;
@@ -126,17 +127,38 @@ export default function ProductQuickView({ isOpen, onClose, product }) {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 p-4 sm:p-6">
             <div>
-              <div className="aspect-square bg-gray-50 rounded-lg flex items-center justify-center text-7xl sm:text-9xl mb-3">
-                {images[selectedImage] || images[0]}
+              <div className="aspect-square bg-gray-50 rounded-lg flex items-center justify-center text-7xl sm:text-9xl mb-3 overflow-hidden">
+                {(() => {
+                  const cur = images[selectedImage] || images[0];
+                  return typeof cur === "string" &&
+                    /^(https?:|\/?uploads)/.test(cur) ? (
+                    <img
+                      src={cur}
+                      alt={item.name}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    cur
+                  );
+                })()}
               </div>
               <div className="grid grid-cols-4 gap-2">
                 {images.map((img, i) => (
                   <button
                     key={i}
                     onClick={() => setSelectedImage(i)}
-                    className={`aspect-square bg-gray-50 rounded flex items-center justify-center text-2xl sm:text-3xl border-2 transition-colors ${selectedImage === i ? "border-primary" : "border-transparent hover:border-gray-200"}`}
+                    className={`aspect-square bg-gray-50 rounded flex items-center justify-center text-2xl sm:text-3xl border-2 transition-colors overflow-hidden ${selectedImage === i ? "border-primary" : "border-transparent hover:border-gray-200"}`}
                   >
-                    {img}
+                    {typeof img === "string" &&
+                    /^(https?:|\/?uploads)/.test(img) ? (
+                      <img
+                        src={img}
+                        alt=""
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      img
+                    )}
                   </button>
                 ))}
               </div>

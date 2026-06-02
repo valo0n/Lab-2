@@ -215,8 +215,18 @@ export default function MegaMenu({ isOpen, onClose }) {
                   key={i}
                   className="flex items-center gap-3 p-2 rounded hover:bg-gray-50 transition-colors group"
                 >
-                  <div className="w-16 h-16 bg-gray-50 rounded flex items-center justify-center text-2xl flex-shrink-0">
-                    {p.image}
+                  <div className="w-16 h-16 bg-gray-50 rounded flex items-center justify-center text-2xl flex-shrink-0 overflow-hidden">
+                    {typeof p.image === "string" &&
+                    /^(https?:|\/?uploads)/.test(p.image) ? (
+                      <img
+                        src={p.image}
+                        alt={p.name}
+                        loading="lazy"
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      p.image
+                    )}
                   </div>
                   <div className="flex-1 min-w-0">
                     <h5 className="text-xs font-medium text-dark line-clamp-2 mb-1 group-hover:text-primary transition-colors">

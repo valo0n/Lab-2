@@ -32,8 +32,18 @@ export default function CartPopup({ isOpen, onClose }) {
                 key={index}
                 className="flex items-start gap-3 px-4 py-3 border-b border-gray-100 last:border-0"
               >
-                <div className="w-12 h-12 bg-gray-50 rounded flex items-center justify-center text-2xl flex-shrink-0">
-                  {item.image}
+                <div className="w-12 h-12 bg-gray-50 rounded flex items-center justify-center text-2xl flex-shrink-0 overflow-hidden">
+                  {typeof item.image === "string" &&
+                  /^(https?:|\/?uploads)/.test(item.image) ? (
+                    <img
+                      src={item.image}
+                      alt={item.name}
+                      loading="lazy"
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    item.image
+                  )}
                 </div>
                 <div className="flex-1 min-w-0">
                   <h4 className="text-xs text-dark line-clamp-2 mb-1 leading-snug">
