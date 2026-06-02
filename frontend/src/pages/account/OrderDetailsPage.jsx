@@ -339,7 +339,7 @@ export default function OrderDetailsPage() {
                   </div>
 
                   {/* Addresses */}
-                  <div className="border-t border-gray-100 pt-6 mt-6 grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div className="border-t border-gray-100 pt-6 mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                       <h4 className="font-bold text-dark mb-3">
                         Billing Address
@@ -363,32 +363,6 @@ export default function OrderDetailsPage() {
                       ) : (
                         <p className="text-xs text-dark-300">
                           S'ka adrese faturimi
-                        </p>
-                      )}
-                    </div>
-                    <div>
-                      <h4 className="font-bold text-dark mb-3">
-                        Shipping Address
-                      </h4>
-                      {shipping ? (
-                        <>
-                          <h5 className="text-sm font-bold text-dark mb-2">
-                            {shipping.full_name}
-                          </h5>
-                          <p className="text-xs text-dark-300 mb-3 leading-relaxed">
-                            {shipping.street}, {shipping.city},{" "}
-                            {shipping.zip_code}, {shipping.country}
-                          </p>
-                          <p className="text-xs text-dark-300">
-                            Phone Number:{" "}
-                            <span className="text-dark">
-                              {shipping.phone || "—"}
-                            </span>
-                          </p>
-                        </>
-                      ) : (
-                        <p className="text-xs text-dark-300">
-                          S'ka adrese dergese
                         </p>
                       )}
                     </div>

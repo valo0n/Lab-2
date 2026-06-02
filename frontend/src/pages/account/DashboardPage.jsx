@@ -485,7 +485,7 @@ export default function DashboardPage() {
                           </td>
                           <td className="px-5 py-4">
                             <Link
-                              to="/order-details"
+                              to={`/order-details?id=${order.id}`}
                               className="text-info text-xs font-medium hover:underline"
                             >
                               View Details →

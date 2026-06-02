@@ -155,7 +155,11 @@ module.exports = {
     try {
       const order = await prisma.order.findUnique({
         where: { order_number: req.params.orderNumber },
-        include: { items: true },
+        include: {
+          items: true,
+          billing_address: true,
+          shipping_address: true,
+        },
       });
       if (!order) {
         return res
