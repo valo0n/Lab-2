@@ -62,8 +62,8 @@ module.exports = {
       // Statistika e porosive
       const [totalOrders, pendingOrders, completedOrders] = await Promise.all([
         prisma.order.count({ where: { user_id: userId } }),
-        prisma.order.count({ where: { user_id: userId, status: "PENDING" } }),
-        prisma.order.count({ where: { user_id: userId, status: "COMPLETED" } }),
+        prisma.order.count({ where: { user_id: userId, status: "pending" } }),
+        prisma.order.count({ where: { user_id: userId, status: "delivered" } }),
       ]);
 
       // Recent orders (7 te fundit)
