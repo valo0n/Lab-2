@@ -1,10 +1,51 @@
 const { prisma } = require("../config/database");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const crypto = require("crypto");
 const AuthChallenge = require("../models/nosql/AuthChallenge");
 
 const accessTokenSecret =
   process.env.JWT_ACCESS_SECRET || process.env.JWT_SECRET;
+const refreshTokenSecret =
+  process.env.JWT_REFRESH_SECRET || process.env.JWT_SECRET + "_refresh";
+const ACCESS_EXPIRES = process.env.JWT_ACCESS_EXPIRES_IN || "1h";
+const REFRESH_EXPIRES = process.env.JWT_REFRESH_EXPIRES_IN || "30d";
+const REFRESH_COOKIE = "refreshToken";
+
+// Firmos access token (jetëshkurtër)
+const signAccessToken = (user, roles) =>
+  jwt.sign({ id: user.id, email: user.email, roles }, accessTokenSecret, {
+    expiresIn: ACCESS_EXPIRES,
+  });
+
+// Hash i refresh token-it për ruajtje në DB (kurrë s'ruajmë token-in e papërpunuar)
+const hashToken = (t) => crypto.createHash("sha256").update(t).digest("hex");
+
+// Krijon refresh token, e ruan (hash) në DB dhe e vendos si httpOnly cookie
+const issueRefreshToken = async (res, user) => {
+  const refreshToken = jwt.sign({ id: user.id }, refreshTokenSecret, {
+    expiresIn: REFRESH_EXPIRES,
+  });
+  const decoded = jwt.decode(refreshToken);
+  const expiresAt = new Date(decoded.exp * 1000);
+
+  await prisma.refreshToken.create({
+    data: {
+      user_id: user.id,
+      token_hash: hashToken(refreshToken),
+      expires_at: expiresAt,
+    },
+  });
+
+  res.cookie(REFRESH_COOKIE, refreshToken, {
+    httpOnly: true, // s'lexohet dot nga JavaScript (mbrojtje XSS)
+    secure: process.env.NODE_ENV === "production", // vetëm HTTPS në prodhim
+    sameSite: "lax", // mbrojtje bazë CSRF
+    path: "/api/auth", // dërgohet vetëm te /api/auth/* (refresh, logout)
+    maxAge: expiresAt.getTime() - Date.now(),
+  });
+};
+
 const challengeExpiryMs = 15 * 60 * 1000;
 
 const createChallengeCode = () =>
@@ -103,12 +144,9 @@ module.exports = {
         type: "email_verification",
       });
 
-      // Generate token
-      const token = jwt.sign(
-        { id: user.id, email: user.email },
-        accessTokenSecret,
-        { expiresIn: process.env.JWT_EXPIRES_IN || "7d" },
-      );
+      // Access token (jetëshkurtër) + refresh token (httpOnly cookie)
+      const token = signAccessToken(user, []);
+      await issueRefreshToken(res, user);
 
       res.status(201).json({
         success: true,
@@ -165,12 +203,9 @@ module.exports = {
       // Merr rolet
       const roles = user.user_roles.map((ur) => ur.role.name);
 
-      // Generate token
-      const token = jwt.sign(
-        { id: user.id, email: user.email, roles },
-        accessTokenSecret,
-        { expiresIn: process.env.JWT_EXPIRES_IN || "7d" },
-      );
+      // Access token (jetëshkurtër) + refresh token (httpOnly cookie)
+      const token = signAccessToken(user, roles);
+      await issueRefreshToken(res, user);
 
       res.json({
         success: true,
@@ -193,34 +228,79 @@ module.exports = {
   // POST /api/auth/refresh
   refreshToken: async (req, res, next) => {
     try {
-      const { refreshToken } = req.body;
+      // Lexohet nga cookie httpOnly (fallback: body, për testim me Postman)
+      const refreshToken =
+        req.cookies?.[REFRESH_COOKIE] || req.body?.refreshToken;
 
       if (!refreshToken) {
-        return res.status(400).json({
+        return res.status(401).json({
           success: false,
-          message: "Refresh token eshte i detyrueshem",
+          message: "Refresh token mungon",
         });
       }
 
-      const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
-      const token = jwt.sign(
-        { id: decoded.id, email: decoded.email },
-        accessTokenSecret,
-        { expiresIn: process.env.JWT_EXPIRES_IN || "7d" },
-      );
+      let decoded;
+      try {
+        decoded = jwt.verify(refreshToken, refreshTokenSecret);
+      } catch {
+        return res
+          .status(401)
+          .json({ success: false, message: "Refresh token i pavlefshëm" });
+      }
+
+      // Verifiko në DB: ekziston, s'është revokuar, s'ka skaduar
+      const stored = await prisma.refreshToken.findFirst({
+        where: {
+          user_id: decoded.id,
+          token_hash: hashToken(refreshToken),
+          revoked_at: null,
+        },
+      });
+
+      if (!stored || stored.expires_at < new Date()) {
+        return res.status(401).json({
+          success: false,
+          message: "Refresh token i pavlefshëm ose i skaduar",
+        });
+      }
+
+      // User + roles për access token-in e ri
+      const user = await prisma.user.findUnique({
+        where: { id: decoded.id },
+        include: { user_roles: { include: { role: true } } },
+      });
+
+      if (!user || !user.is_active) {
+        return res
+          .status(401)
+          .json({ success: false, message: "User i pavlefshëm" });
+      }
+
+      const roles = user.user_roles.map((ur) => ur.role.name);
+      const token = signAccessToken(user, roles);
 
       res.json({ success: true, data: { token } });
     } catch (error) {
-      return res.status(401).json({
-        success: false,
-        message: "Refresh token i pavlefshem",
-      });
+      next(error);
     }
   },
 
   // POST /api/auth/logout
   logout: async (req, res, next) => {
-    res.json({ success: true, message: "Logged out" });
+    try {
+      const refreshToken = req.cookies?.[REFRESH_COOKIE];
+      if (refreshToken) {
+        // Revoko në DB që të mos përdoret më
+        await prisma.refreshToken.updateMany({
+          where: { token_hash: hashToken(refreshToken), revoked_at: null },
+          data: { revoked_at: new Date() },
+        });
+      }
+      res.clearCookie(REFRESH_COOKIE, { path: "/api/auth" });
+      res.json({ success: true, message: "Logged out" });
+    } catch (error) {
+      next(error);
+    }
   },
 
   requestPasswordReset: async (req, res, next) => {

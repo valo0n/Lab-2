@@ -66,7 +66,13 @@ export const authService = {
     return response.data;
   },
 
-  logout: () => {
+  logout: async () => {
+    try {
+      // Revokon refresh token-in dhe pastron cookie-n httpOnly në server
+      await api.post("/auth/logout");
+    } catch {
+      // edhe nëse dështon, pastrojmë gjendjen lokale
+    }
     localStorage.removeItem("token");
     localStorage.removeItem("user");
     localStorage.removeItem("pendingVerificationEmail");
