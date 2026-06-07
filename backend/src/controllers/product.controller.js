@@ -8,7 +8,10 @@ const parseMaybeJson = (value, fallback = []) => {
     try {
       return JSON.parse(value);
     } catch {
-      return value.split(",").map((item) => item.trim()).filter(Boolean);
+      return value
+        .split(",")
+        .map((item) => item.trim())
+        .filter(Boolean);
     }
   }
   return fallback;
@@ -20,7 +23,11 @@ const toBool = (value, fallback = false) => {
 };
 
 const mapFilesToImages = (files = []) =>
-  files.map((file, index) => ({ image_url: `/uploads/${file.filename}`, sort_order: index, is_primary: index === 0 }));
+  files.map((file, index) => ({
+    image_url: `/uploads/${file.filename}`,
+    sort_order: index,
+    is_primary: index === 0,
+  }));
 
 module.exports = {
   // GET /api/products — me filtra për homepage seksione
@@ -193,20 +200,31 @@ module.exports = {
 
         if (files.length) {
           await tx.productImage.createMany({
-            data: mapFilesToImages(files).map((image) => ({ ...image, product_id: created.id })),
+            data: mapFilesToImages(files).map((image) => ({
+              ...image,
+              product_id: created.id,
+            })),
           });
         }
 
         if (tagValues.length) {
           for (const tagValue of tagValues) {
-            const tagName = typeof tagValue === "string" ? tagValue : tagValue.name || tagValue.tag;
+            const tagName =
+              typeof tagValue === "string"
+                ? tagValue
+                : tagValue.name || tagValue.tag;
             if (!tagName) continue;
             const tag = await tx.tag.upsert({
               where: { slug: slugify(tagName, { lower: true, strict: true }) },
               update: { name: tagName },
-              create: { name: tagName, slug: slugify(tagName, { lower: true, strict: true }) },
+              create: {
+                name: tagName,
+                slug: slugify(tagName, { lower: true, strict: true }),
+              },
             });
-            await tx.productTag.create({ data: { product_id: created.id, tag_id: tag.id } });
+            await tx.productTag.create({
+              data: { product_id: created.id, tag_id: tag.id },
+            });
           }
         }
 
@@ -216,9 +234,14 @@ module.exports = {
               data: {
                 product_id: created.id,
                 variant_type: variant.variant_type || variant.type || "default",
-                variant_value: variant.variant_value || variant.value || "default",
-                price_adj: variant.price_adj ? parseFloat(variant.price_adj) : 0,
-                stock_qty: variant.stock_qty ? parseInt(variant.stock_qty, 10) : 0,
+                variant_value:
+                  variant.variant_value || variant.value || "default",
+                price_adj: variant.price_adj
+                  ? parseFloat(variant.price_adj)
+                  : 0,
+                stock_qty: variant.stock_qty
+                  ? parseInt(variant.stock_qty, 10)
+                  : 0,
                 sku: variant.sku || null,
               },
             });
@@ -261,16 +284,33 @@ module.exports = {
           where: { id },
           data: {
             ...(category_id && { category_id: parseInt(category_id, 10) }),
-            ...(brand_id !== undefined && { brand_id: brand_id ? parseInt(brand_id, 10) : null }),
-            ...(name && { name, slug: slugify(name, { lower: true, strict: true }) }),
-            ...(description !== undefined && { description: description || null }),
-            ...(short_description !== undefined && { short_description: short_description || null }),
+            ...(brand_id !== undefined && {
+              brand_id: brand_id ? parseInt(brand_id, 10) : null,
+            }),
+            ...(name && {
+              name,
+              slug: slugify(name, { lower: true, strict: true }),
+            }),
+            ...(description !== undefined && {
+              description: description || null,
+            }),
+            ...(short_description !== undefined && {
+              short_description: short_description || null,
+            }),
             ...(price !== undefined && { price: parseFloat(price) }),
-            ...(compare_price !== undefined && { compare_price: compare_price ? parseFloat(compare_price) : null }),
-            ...(stock_qty !== undefined && { stock_qty: parseInt(stock_qty, 10) }),
+            ...(compare_price !== undefined && {
+              compare_price: compare_price ? parseFloat(compare_price) : null,
+            }),
+            ...(stock_qty !== undefined && {
+              stock_qty: parseInt(stock_qty, 10),
+            }),
             ...(sku !== undefined && { sku: sku || null }),
-            ...(is_active !== undefined && { is_active: toBool(is_active, true) }),
-            ...(is_featured !== undefined && { is_featured: toBool(is_featured, false) }),
+            ...(is_active !== undefined && {
+              is_active: toBool(is_active, true),
+            }),
+            ...(is_featured !== undefined && {
+              is_featured: toBool(is_featured, false),
+            }),
             updated_by: req.user.id,
           },
         });
@@ -278,21 +318,32 @@ module.exports = {
         if (files.length) {
           await tx.productImage.deleteMany({ where: { product_id: id } });
           await tx.productImage.createMany({
-            data: mapFilesToImages(files).map((image) => ({ ...image, product_id: id })),
+            data: mapFilesToImages(files).map((image) => ({
+              ...image,
+              product_id: id,
+            })),
           });
         }
 
         if (tagValues) {
           await tx.productTag.deleteMany({ where: { product_id: id } });
           for (const tagValue of tagValues) {
-            const tagName = typeof tagValue === "string" ? tagValue : tagValue.name || tagValue.tag;
+            const tagName =
+              typeof tagValue === "string"
+                ? tagValue
+                : tagValue.name || tagValue.tag;
             if (!tagName) continue;
             const tag = await tx.tag.upsert({
               where: { slug: slugify(tagName, { lower: true, strict: true }) },
               update: { name: tagName },
-              create: { name: tagName, slug: slugify(tagName, { lower: true, strict: true }) },
+              create: {
+                name: tagName,
+                slug: slugify(tagName, { lower: true, strict: true }),
+              },
             });
-            await tx.productTag.create({ data: { product_id: id, tag_id: tag.id } });
+            await tx.productTag.create({
+              data: { product_id: id, tag_id: tag.id },
+            });
           }
         }
 
@@ -303,9 +354,14 @@ module.exports = {
               data: {
                 product_id: id,
                 variant_type: variant.variant_type || variant.type || "default",
-                variant_value: variant.variant_value || variant.value || "default",
-                price_adj: variant.price_adj ? parseFloat(variant.price_adj) : 0,
-                stock_qty: variant.stock_qty ? parseInt(variant.stock_qty, 10) : 0,
+                variant_value:
+                  variant.variant_value || variant.value || "default",
+                price_adj: variant.price_adj
+                  ? parseFloat(variant.price_adj)
+                  : 0,
+                stock_qty: variant.stock_qty
+                  ? parseInt(variant.stock_qty, 10)
+                  : 0,
                 sku: variant.sku || null,
               },
             });

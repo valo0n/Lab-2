@@ -224,12 +224,10 @@ module.exports = {
 
       const { exp_month, exp_year } = parseExpiry(expiry);
       if (!exp_month || exp_month < 1 || exp_month > 12 || !exp_year) {
-        return res
-          .status(400)
-          .json({
-            success: false,
-            message: "Data e skadimit nuk eshte valide",
-          });
+        return res.status(400).json({
+          success: false,
+          message: "Data e skadimit nuk eshte valide",
+        });
       }
 
       const validBrands = ["visa", "mastercard", "amex", "discover"];
