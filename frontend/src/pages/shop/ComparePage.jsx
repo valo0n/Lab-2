@@ -119,6 +119,18 @@ function addToLocalStorageList(key, product) {
   }
 }
 
+function readLocalStorageList(key) {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(key) || "[]");
+
+    return Array.isArray(parsed) ? parsed : [];
+  } catch (error) {
+    console.warn(`Invalid ${key} data in localStorage, resetting it.`, error);
+    localStorage.removeItem(key);
+    return [];
+  }
+}
+
 export default function ComparePage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
@@ -168,7 +180,7 @@ export default function ComparePage() {
         }
       }
 
-      const localCompare = JSON.parse(localStorage.getItem("compare") || "[]");
+      const localCompare = readLocalStorageList("compare");
 
       if (Array.isArray(localCompare) && localCompare.length > 0) {
         setProducts(localCompare.slice(0, 3));

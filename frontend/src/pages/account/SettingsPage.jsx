@@ -1,5 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { authService } from "../../services/authService";
+import { userService } from "../../services/userService";
 import {
   Layers,
   ShoppingBag,
@@ -36,21 +38,105 @@ const sidebarItems = [
   { name: "Log-out", icon: LogOut, path: "/signin" },
 ];
 
+function getPrimaryRole(user) {
+  const roles = user?.roles || [];
+
+  if (roles.includes("admin") || roles.includes("super_admin")) return "admin";
+  if (roles.includes("manager")) return "manager";
+  if (roles.includes("editor")) return "editor";
+  if (roles.includes("support")) return "support";
+
+  return "customer";
+}
+
+function getRoleDetails(role) {
+  const roleDetails = {
+    admin: {
+      title: "Admin account",
+      description: "You have full access to product, user, order, and system settings.",
+      highlights: ["Manage users", "Update site settings", "Review orders and reports"],
+    },
+    manager: {
+      title: "Manager account",
+      description: "You can oversee catalog, orders, and operational settings.",
+      highlights: ["Manage products and categories", "Handle orders", "Track performance"],
+    },
+    editor: {
+      title: "Editor account",
+      description: "You can update catalog content and keep product data clean.",
+      highlights: ["Edit products", "Manage categories and brands", "Maintain content quality"],
+    },
+    support: {
+      title: "Support account",
+      description: "You can assist customers and monitor order-related issues.",
+      highlights: ["Review orders", "Handle reviews", "Support customer requests"],
+    },
+    customer: {
+      title: "Customer account",
+      description: "You can manage your profile, orders, wishlist, and preferences.",
+      highlights: ["Update profile", "Change password", "Manage notifications"],
+    },
+  };
+
+  return roleDetails[role] || roleDetails.customer;
+}
+
 export default function SettingsPage() {
+  const currentUser = authService.getCurrentUser();
+  const primaryRole = getPrimaryRole(currentUser);
+  const roleDetails = getRoleDetails(primaryRole);
+  const displayName = currentUser?.name || "";
+
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
   const [wishlistOpen, setWishlistOpen] = useState(false);
   const [accountOpen, setAccountOpen] = useState(false);
 
   // Account form state
-  const [firstName, setFirstName] = useState("Kevin");
-  const [lastName, setLastName] = useState("Gilbert");
-  const [email, setEmail] = useState("kevin.gilbert@gmail.com");
-  const [secondaryEmail, setSecondaryEmail] = useState("kevin12345@gmail.com");
-  const [phone, setPhone] = useState("+1-202-555-0118");
-  const [country, setCountry] = useState("Bangladesh");
-  const [state, setState] = useState("Dhaka");
-  const [zipCode, setZipCode] = useState("1207");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [email, setEmail] = useState("");
+  const [secondaryEmail, setSecondaryEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [country, setCountry] = useState("");
+  const [state, setState] = useState("");
+  const [zipCode, setZipCode] = useState("");
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadProfile = async () => {
+      try {
+        const response = await userService.getProfile();
+        const profile = response?.data || {};
+        const primaryAddress =
+          profile.addresses?.find((address) => address.is_default) ||
+          profile.addresses?.[0] ||
+          null;
+
+        if (!isMounted) return;
+
+        setFirstName(profile.first_name || "");
+        setLastName(profile.last_name || "");
+        setEmail(profile.email || currentUser?.email || "");
+        setPhone(profile.phone || primaryAddress?.phone || "");
+        setSecondaryEmail(profile.secondary_email || profile.secondaryEmail || "");
+        setCountry(primaryAddress?.country || "");
+        setState(primaryAddress?.state || "");
+        setZipCode(primaryAddress?.zip_code || "");
+      } catch (error) {
+        if (!isMounted) return;
+
+        setEmail(currentUser?.email || "");
+      }
+    };
+
+    loadProfile();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [currentUser?.email]);
 
   // Password
   const [currentPassword, setCurrentPassword] = useState("");
@@ -84,7 +170,21 @@ export default function SettingsPage() {
 
   const handleSaveAccount = (e) => {
     e.preventDefault();
-    console.log("Account saved:", { firstName, lastName, email, phone });
+    const normalize = (value) => {
+      const trimmed = value.trim();
+      return trimmed ? trimmed : null;
+    };
+
+    console.log("Account saved:", {
+      firstName: normalize(firstName),
+      lastName: normalize(lastName),
+      email: normalize(email),
+      secondaryEmail: normalize(secondaryEmail),
+      phone: normalize(phone),
+      country: normalize(country),
+      state: normalize(state),
+      zipCode: normalize(zipCode),
+    });
     alert("Të dhënat e llogarisë u ruajtën!");
   };
 
@@ -175,6 +275,39 @@ export default function SettingsPage() {
 
           {/* Content */}
           <div className="space-y-6">
+            <div className="bg-gradient-to-r from-dark via-dark-700 to-primary rounded-lg text-white p-6 shadow-sm">
+              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <div>
+                  <p className="text-xs uppercase tracking-[0.2em] text-white/70 mb-2">
+                    Current role
+                  </p>
+                  <h2 className="text-2xl font-bold mb-2">{roleDetails.title}</h2>
+                  <p className="text-sm text-white/80 max-w-2xl">
+                    {roleDetails.description}
+                  </p>
+                </div>
+
+                <div className="bg-white/10 border border-white/15 rounded-lg px-4 py-3 min-w-[220px]">
+                  <p className="text-xs uppercase tracking-[0.2em] text-white/60 mb-2">
+                    Signed in as
+                  </p>
+                  <p className="font-semibold">{displayName}</p>
+                  <p className="text-sm text-white/75">{currentUser?.email || email}</p>
+                  <span className="inline-flex mt-3 rounded-full bg-white/15 px-3 py-1 text-xs font-semibold uppercase tracking-wide">
+                    {primaryRole}
+                  </span>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mt-6">
+                {roleDetails.highlights.map((item) => (
+                  <div key={item} className="rounded-lg bg-white/10 px-4 py-3 text-sm text-white/90">
+                    {item}
+                  </div>
+                ))}
+              </div>
+            </div>
+
             {/* Account Settings */}
             <div className="bg-white border border-gray-100 rounded-lg">
               <div className="px-5 py-3 border-b border-gray-100">
@@ -188,7 +321,14 @@ export default function SettingsPage() {
                 <div className="flex items-center gap-4 mb-6 pb-6 border-b border-gray-100">
                   <div className="relative">
                     <div className="w-20 h-20 bg-primary-50 rounded-full flex items-center justify-center text-primary font-bold text-2xl">
-                      KG
+                      {firstName || lastName ? (
+                        <>
+                          {firstName?.charAt(0)?.toUpperCase() || ""}
+                          {lastName?.charAt(0)?.toUpperCase() || ""}
+                        </>
+                      ) : (
+                        <Camera size={20} />
+                      )}
                     </div>
                     <button
                       type="button"
@@ -280,11 +420,14 @@ export default function SettingsPage() {
                       onChange={(e) => setCountry(e.target.value)}
                       className="w-full border border-gray-200 rounded px-3 py-2.5 text-sm focus:outline-none focus:border-primary"
                     >
-                      <option>Bangladesh</option>
-                      <option>Kosovo</option>
-                      <option>Albania</option>
-                      <option>USA</option>
-                      <option>UK</option>
+                      <option value="" disabled>
+                        Select country
+                      </option>
+                      <option value="Bangladesh">Bangladesh</option>
+                      <option value="Kosovo">Kosovo</option>
+                      <option value="Albania">Albania</option>
+                      <option value="USA">USA</option>
+                      <option value="UK">UK</option>
                     </select>
                   </div>
                 </div>

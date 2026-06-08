@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Link } from "react-router-dom";
 import {
   Layers,
@@ -40,42 +40,6 @@ const sidebarItems = [
   { name: "Log-out", icon: LogOut, path: "/signin" },
 ];
 
-// Browsing history mbetet statike (do lidhet me MongoDB me vone)
-const browsingHistory = [
-  {
-    name: "TOZO T6 True Wireless Earbuds Bluetooth Headphon...",
-    price: 70,
-    image: "🎧",
-    badge: "HOT",
-    badgeColor: "primary",
-    rating: 4.5,
-    reviews: 738,
-  },
-  {
-    name: "Samsung Electronics Samsung Galexy S21 5G",
-    price: 2300,
-    image: "📱",
-    rating: 5,
-    reviews: 536,
-  },
-  {
-    name: "Amazon Basics High-Speed HDMI Cable (18 Gbps, 4K/6...",
-    price: 360,
-    image: "❄️",
-    badge: "BEST DEALS",
-    badgeColor: "info",
-    rating: 5,
-    reviews: 423,
-  },
-  {
-    name: "Portable Wshing Machine, 11lbs capacity Model 18NMF...",
-    price: 80,
-    image: "🎧",
-    rating: 4,
-    reviews: 816,
-  },
-];
-
 function StatusBadge({ status }) {
   const colors = {
     "IN PROGRESS": "text-warning",
@@ -101,6 +65,40 @@ function formatDate(dateStr) {
     month: "short",
     day: "numeric",
   });
+}
+
+function BrowsingPreviewCard({ item }) {
+  const name = item.name || item.product_name || "Untitled product";
+  const price = item.price ?? item.product_price ?? null;
+  const image = item.image || item.product_image || "📦";
+  const category = item.category || "";
+  const isImageUrl = typeof image === "string" && /^https?:\/\//i.test(image);
+
+  return (
+    <div className="border border-gray-100 rounded-lg p-3 relative">
+      <div className="aspect-square bg-gray-50 rounded flex items-center justify-center text-5xl mb-3 overflow-hidden">
+        {isImageUrl ? (
+          <img src={image} alt={name} className="h-full w-full object-cover" />
+        ) : (
+          image
+        )}
+      </div>
+      <div className="flex items-center justify-between gap-2 text-[11px] text-dark-300 mb-1">
+        <span>{category}</span>
+        <span>{item.viewed_at ? formatDate(item.viewed_at) : ""}</span>
+      </div>
+      <h4 className="text-xs text-dark line-clamp-2 mb-2 min-h-[32px]">
+        {name}
+      </h4>
+      <div className="flex items-center gap-2">
+        {price !== null ? (
+          <p className="text-info font-bold text-sm">${price}</p>
+        ) : (
+          <p className="text-dark-300 text-xs">Price unavailable</p>
+        )}
+      </div>
+    </div>
+  );
 }
 
 export default function DashboardPage() {
@@ -135,6 +133,7 @@ export default function DashboardPage() {
   const stats = dashboardData?.stats || { total: 0, pending: 0, completed: 0 };
   const recentOrders = dashboardData?.recentOrders || [];
   const cards = dashboardData?.cards || [];
+  const browsingHistory = useMemo(() => dashboardData?.browsing || [], [dashboardData]);
 
   const displayName = currentUser?.name || user.name || "User";
   const displayEmail = currentUser?.email || user.email || "";
@@ -145,43 +144,25 @@ export default function DashboardPage() {
     .toUpperCase()
     .slice(0, 2);
 
-  const toggleCart = () => {
-    setCartOpen((v) => !v);
-    setWishlistOpen(false);
-    setAccountOpen(false);
-  };
-  const toggleWishlist = () => {
-    setWishlistOpen((v) => !v);
-    setCartOpen(false);
-    setAccountOpen(false);
-  };
-  const toggleAccount = () => {
-    setAccountOpen((v) => !v);
-    setCartOpen(false);
-    setWishlistOpen(false);
-  };
-
   return (
     <div className="min-h-screen bg-white font-sans">
       <TopBar />
       <Header
         onMenuClick={() => setMobileMenuOpen(true)}
         cartOpen={cartOpen}
-        onCartToggle={toggleCart}
+        onCartToggle={() => setCartOpen((v) => !v)}
         wishlistOpen={wishlistOpen}
-        onWishlistToggle={toggleWishlist}
+        onWishlistToggle={() => setWishlistOpen((v) => !v)}
         accountOpen={accountOpen}
-        onAccountToggle={toggleAccount}
+        onAccountToggle={() => setAccountOpen((v) => !v)}
       />
       <Navigation
         mobileOpen={mobileMenuOpen}
         onMobileClose={() => setMobileMenuOpen(false)}
       />
 
-      {/* Breadcrumb */}
       <div className="bg-gray-50 border-b border-gray-100">
-        <div className="max-w-7xl mx-auto px-4 py-4 flex items-center gap-2 text-sm">
-          <Home size={14} className="text-dark-300" />
+        <div className="max-w-7xl mx-auto px-4 py-4 flex items-center gap-2 text-sm flex-wrap">
           <Link to="/" className="text-dark-300 hover:text-primary">
             Home
           </Link>

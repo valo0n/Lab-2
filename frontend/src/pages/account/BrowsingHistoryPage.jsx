@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   Layers,
@@ -20,6 +20,7 @@ import TopBar from "../../components/Layout/TopBar";
 import Header from "../../components/Layout/Header";
 import Navigation from "../../components/Layout/Navigation";
 import Footer from "../../components/Layout/Footer";
+import { userService } from "../../services/userService";
 
 const sidebarItems = [
   { name: "Dashboard", icon: Layers, path: "/dashboard" },
@@ -32,175 +33,6 @@ const sidebarItems = [
   { name: "Browsing History", icon: Clock, path: "/browsing-history" },
   { name: "Setting", icon: Settings, path: "/settings" },
   { name: "Log-out", icon: LogOut, path: "/signin" },
-];
-
-const historyByDate = [
-  {
-    date: "17 OCT, 2020",
-    products: [
-      {
-        name: "TOZO T6 True Wireless Earbuds Bluetooth Headphon...",
-        price: 70,
-        image: "🎧",
-        rating: 4.5,
-        reviews: 738,
-        badge: "HOT",
-        badgeColor: "primary",
-      },
-      {
-        name: "Samsung Electronics Samsung Galexy S21 5G",
-        price: 2300,
-        image: "📱",
-        rating: 5,
-        reviews: 536,
-      },
-      {
-        name: "Amazon Basics High-Speed HDMI Cable (18 Gbps, 4K/6...",
-        price: 360,
-        image: "❄️",
-        rating: 5,
-        reviews: 423,
-        badge: "BEST DEALS",
-        badgeColor: "info",
-      },
-      {
-        name: "Portable Wshing Machine, 11lbs capacity Model 18NMF...",
-        price: 80,
-        image: "🎧",
-        rating: 4,
-        reviews: 816,
-      },
-    ],
-  },
-  {
-    date: "17 OCT, 2020",
-    products: [
-      {
-        name: "Amazon Basics High-Speed HDMI Cable (18 Gbps, 4K/6...",
-        price: 360,
-        image: "🎧",
-        rating: 4,
-        reviews: 994,
-        badge: "BEST DEALS",
-        badgeColor: "info",
-      },
-      {
-        name: "Portable Wshing Machine, 11lbs capacity Model 18NMF...",
-        price: 80,
-        image: "🎧",
-        rating: 5,
-        reviews: 798,
-      },
-      {
-        name: "TOZO T6 True Wireless Earbuds Bluetooth Headphon...",
-        price: 70,
-        image: "⌨️",
-        rating: 5,
-        reviews: 600,
-        badge: "HOT",
-        badgeColor: "primary",
-      },
-    ],
-  },
-  {
-    date: "24 MAY, 2020",
-    products: [
-      {
-        name: "Amazon Basics High-Speed HDMI Cable (18 Gbps, 4K/6...",
-        price: 360,
-        image: "🎧",
-        rating: 4,
-        reviews: 994,
-        badge: "BEST DEALS",
-        badgeColor: "info",
-      },
-      {
-        name: "Portable Wshing Machine, 11lbs capacity Model 18NMF...",
-        price: 80,
-        image: "🎧",
-        rating: 5,
-        reviews: 798,
-      },
-      {
-        name: "TOZO T6 True Wireless Earbuds Bluetooth Headphon...",
-        price: 70,
-        image: "⌨️",
-        rating: 5,
-        reviews: 600,
-        badge: "HOT",
-        badgeColor: "primary",
-      },
-      {
-        name: "Dell Optiplex 7000x7480 All-in-One Computer Monitor",
-        price: 250,
-        image: "🖨️",
-        rating: 5,
-        reviews: 492,
-      },
-      {
-        name: "Samsung Electronics Samsung Galexy S21 5G",
-        price: 2300,
-        image: "📷",
-        rating: 4,
-        reviews: 740,
-        badge: "SOLD OUT",
-        badgeColor: "gray",
-      },
-    ],
-  },
-  {
-    date: "21 SEP, 2020",
-    products: [
-      {
-        name: "Wired Over-Ear Gaming Headphones with USB",
-        price: 1500,
-        image: "🚁",
-        rating: 5,
-        reviews: 647,
-      },
-      {
-        name: "Polaroid 57-Inch Photo/Video Tripod with Deluxe Tripod Ca...",
-        price: 1200,
-        oldPrice: 1600,
-        image: "📺",
-        rating: 4,
-        reviews: 877,
-        badge: "25% OFF",
-        badgeColor: "warning",
-      },
-      {
-        name: "Dell Optiplex 7000x7480 All-in-One Computer Monitor",
-        price: 250,
-        image: "🖨️",
-        rating: 5,
-        reviews: 492,
-      },
-      {
-        name: "Polaroid 57-Inch Photo/Video Tripod with Deluxe Tripod Ca...",
-        price: 1200,
-        oldPrice: 1600,
-        image: "🧺",
-        rating: 4,
-        reviews: 423,
-        badge: "25% OFF",
-        badgeColor: "warning",
-      },
-    ],
-  },
-  {
-    date: "22 OCT, 2020",
-    products: [
-      {
-        name: "4K UHD LED Smart TV with Chromecast Built-in",
-        price: 220,
-        image: "📹",
-        rating: 4,
-        reviews: 556,
-        badge: "SALE",
-        badgeColor: "success",
-      },
-    ],
-  },
 ];
 
 function BadgeColor(color) {
@@ -216,45 +48,41 @@ function BadgeColor(color) {
 }
 
 function ProductCard({ product }) {
+  const name = product.name || product.product_name || "Untitled product";
+  const price = product.price ?? product.product_price ?? null;
+  const image = product.image || product.product_image || "📦";
+  const category = product.category || "";
+  const viewedAt = product.viewed_at
+    ? new Date(product.viewed_at).toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+      })
+    : "";
+  const isImageUrl = typeof image === "string" && /^https?:\/\//i.test(image);
+
   return (
     <div className="border border-gray-100 rounded-lg p-3 relative bg-white">
-      {product.badge && (
-        <span
-          className={`absolute top-2 left-2 text-[9px] font-bold text-white px-2 py-0.5 rounded ${BadgeColor(product.badgeColor)}`}
-        >
-          {product.badge}
-        </span>
-      )}
-      <div className="aspect-square bg-gray-50 rounded flex items-center justify-center text-5xl mb-3">
-        {product.image}
+      <div className="aspect-square bg-gray-50 rounded flex items-center justify-center text-5xl mb-3 overflow-hidden">
+        {isImageUrl ? (
+          <img src={image} alt={name} className="h-full w-full object-cover" />
+        ) : (
+          image
+        )}
       </div>
-      <div className="flex items-center gap-1 text-xs mb-1">
-        <div className="flex text-warning">
-          {"★★★★★".split("").map((s, j) => (
-            <span
-              key={j}
-              className={
-                j < Math.round(product.rating)
-                  ? "text-warning"
-                  : "text-gray-200"
-              }
-            >
-              ★
-            </span>
-          ))}
-        </div>
-        <span className="text-dark-300">({product.reviews})</span>
+      <div className="flex items-center justify-between gap-2 text-[11px] text-dark-300 mb-1">
+        <span>{category}</span>
+        <span>{viewedAt}</span>
       </div>
       <h4 className="text-xs text-dark line-clamp-2 mb-2 min-h-[32px]">
-        {product.name}
+        {name}
       </h4>
       <div className="flex items-center gap-2">
-        {product.oldPrice && (
-          <span className="text-dark-300 text-xs line-through">
-            ${product.oldPrice}
-          </span>
+        {price !== null ? (
+          <p className="text-info font-bold text-sm">${price}</p>
+        ) : (
+          <p className="text-dark-300 text-xs">Price unavailable</p>
         )}
-        <p className="text-info font-bold text-sm">${product.price}</p>
       </div>
     </div>
   );
@@ -266,6 +94,52 @@ export default function BrowsingHistoryPage() {
   const [wishlistOpen, setWishlistOpen] = useState(false);
   const [accountOpen, setAccountOpen] = useState(false);
   const [historyOn, setHistoryOn] = useState(true);
+  const [browsing, setBrowsing] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let active = true;
+
+    const loadHistory = async () => {
+      try {
+        const response = await userService.getDashboard();
+        if (!active) return;
+        setBrowsing(response?.data?.browsing || []);
+      } catch (error) {
+        if (!active) return;
+        setBrowsing([]);
+      } finally {
+        if (active) setLoading(false);
+      }
+    };
+
+    loadHistory();
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const historyByDate = useMemo(() => {
+    const grouped = new Map();
+
+    browsing
+      .slice()
+      .sort((a, b) => new Date(b.viewed_at || 0) - new Date(a.viewed_at || 0))
+      .forEach((item) => {
+        const date = item.viewed_at
+          ? new Date(item.viewed_at).toLocaleDateString("en-US", {
+              year: "numeric",
+              month: "short",
+              day: "numeric",
+            })
+          : "Unknown date";
+        if (!grouped.has(date)) grouped.set(date, []);
+        grouped.get(date).push(item);
+      });
+
+    return Array.from(grouped.entries()).map(([date, products]) => ({ date, products }));
+  }, [browsing]);
 
   const toggleCart = () => {
     setCartOpen((v) => !v);
@@ -390,21 +264,34 @@ export default function BrowsingHistoryPage() {
             </div>
 
             {/* History list */}
-            {historyByDate.map((day, di) => (
-              <div
-                key={di}
-                className="bg-white border border-gray-100 rounded-lg p-5 mb-4"
-              >
-                <p className="text-xs font-bold text-dark mb-4 tracking-wider">
-                  {day.date}
-                </p>
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-                  {day.products.map((p, pi) => (
-                    <ProductCard key={pi} product={p} />
-                  ))}
-                </div>
+            {loading ? (
+              <div className="bg-white border border-gray-100 rounded-lg p-5 text-sm text-dark-300">
+                Duke ngarkuar...
               </div>
-            ))}
+            ) : historyByDate.length ? (
+              historyByDate.map((day, di) => (
+                <div
+                  key={`${day.date}-${di}`}
+                  className="bg-white border border-gray-100 rounded-lg p-5 mb-4"
+                >
+                  <p className="text-xs font-bold text-dark mb-4 tracking-wider">
+                    {day.date}
+                  </p>
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                    {day.products.map((p, pi) => (
+                      <ProductCard
+                        key={`${p.product_id || p.product_name}-${pi}`}
+                        product={p}
+                      />
+                    ))}
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="bg-white border border-gray-100 rounded-lg p-5 text-sm text-dark-300">
+                Ende s'ka browsing history.
+              </div>
+            )}
 
             {/* Load more */}
             <div className="flex justify-center mt-6">

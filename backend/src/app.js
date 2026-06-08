@@ -1,10 +1,15 @@
 const express = require("express");
 const cors = require("cors");
-const cookieParser = require("cookie-parser");
+const cookie = require("cookie");
 const path = require("path");
 require("dotenv").config();
 
 const app = express();
+
+const parseCookies = (req, res, next) => {
+  req.cookies = req.headers.cookie ? cookie.parse(req.headers.cookie) : {};
+  next();
+};
 
 // Middleware
 app.use(
@@ -15,7 +20,7 @@ app.use(
     allowedHeaders: ["Content-Type", "Authorization"],
   }),
 );
-app.use(cookieParser());
+app.use(parseCookies);
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true }));
 app.use("/uploads", express.static(path.join(__dirname, "..", "uploads")));
