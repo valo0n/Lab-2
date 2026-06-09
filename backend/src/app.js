@@ -29,6 +29,11 @@ app.use("/uploads", express.static(path.join(__dirname, "..", "uploads")));
 const routes = require("./routes");
 app.use("/api", routes);
 
+// API Documentation (Swagger UI) — http://localhost:5000/api/docs
+const swaggerUi = require("swagger-ui-express");
+const openapiSpec = require("./config/openapi.json");
+app.use("/api/docs", swaggerUi.serve, swaggerUi.setup(openapiSpec));
+
 app.get("/api/health", (req, res) => {
   res.json({ status: "OK", timestamp: new Date().toISOString() });
 });
