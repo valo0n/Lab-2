@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import AdminPanelLink from "../../components/common/AdminPanelLink";
 import { authService } from "../../services/authService";
 import { userService } from "../../services/userService";
 import {
@@ -53,27 +54,46 @@ function getRoleDetails(role) {
   const roleDetails = {
     admin: {
       title: "Admin account",
-      description: "You have full access to product, user, order, and system settings.",
-      highlights: ["Manage users", "Update site settings", "Review orders and reports"],
+      description:
+        "You have full access to product, user, order, and system settings.",
+      highlights: [
+        "Manage users",
+        "Update site settings",
+        "Review orders and reports",
+      ],
     },
     manager: {
       title: "Manager account",
       description: "You can oversee catalog, orders, and operational settings.",
-      highlights: ["Manage products and categories", "Handle orders", "Track performance"],
+      highlights: [
+        "Manage products and categories",
+        "Handle orders",
+        "Track performance",
+      ],
     },
     editor: {
       title: "Editor account",
-      description: "You can update catalog content and keep product data clean.",
-      highlights: ["Edit products", "Manage categories and brands", "Maintain content quality"],
+      description:
+        "You can update catalog content and keep product data clean.",
+      highlights: [
+        "Edit products",
+        "Manage categories and brands",
+        "Maintain content quality",
+      ],
     },
     support: {
       title: "Support account",
       description: "You can assist customers and monitor order-related issues.",
-      highlights: ["Review orders", "Handle reviews", "Support customer requests"],
+      highlights: [
+        "Review orders",
+        "Handle reviews",
+        "Support customer requests",
+      ],
     },
     customer: {
       title: "Customer account",
-      description: "You can manage your profile, orders, wishlist, and preferences.",
+      description:
+        "You can manage your profile, orders, wishlist, and preferences.",
       highlights: ["Update profile", "Change password", "Manage notifications"],
     },
   };
@@ -120,7 +140,9 @@ export default function SettingsPage() {
         setLastName(profile.last_name || "");
         setEmail(profile.email || currentUser?.email || "");
         setPhone(profile.phone || primaryAddress?.phone || "");
-        setSecondaryEmail(profile.secondary_email || profile.secondaryEmail || "");
+        setSecondaryEmail(
+          profile.secondary_email || profile.secondaryEmail || "",
+        );
         setCountry(primaryAddress?.country || "");
         setState(primaryAddress?.state || "");
         setZipCode(primaryAddress?.zip_code || "");
@@ -252,6 +274,7 @@ export default function SettingsPage() {
           {/* Sidebar */}
           <aside className="bg-white rounded-lg border border-gray-100 overflow-hidden h-fit">
             <nav className="flex flex-col py-2">
+              <AdminPanelLink />
               {sidebarItems.map((item) => {
                 const Icon = item.icon;
                 const isActive = item.name === "Setting";
@@ -281,7 +304,9 @@ export default function SettingsPage() {
                   <p className="text-xs uppercase tracking-[0.2em] text-white/70 mb-2">
                     Current role
                   </p>
-                  <h2 className="text-2xl font-bold mb-2">{roleDetails.title}</h2>
+                  <h2 className="text-2xl font-bold mb-2">
+                    {roleDetails.title}
+                  </h2>
                   <p className="text-sm text-white/80 max-w-2xl">
                     {roleDetails.description}
                   </p>
@@ -292,7 +317,9 @@ export default function SettingsPage() {
                     Signed in as
                   </p>
                   <p className="font-semibold">{displayName}</p>
-                  <p className="text-sm text-white/75">{currentUser?.email || email}</p>
+                  <p className="text-sm text-white/75">
+                    {currentUser?.email || email}
+                  </p>
                   <span className="inline-flex mt-3 rounded-full bg-white/15 px-3 py-1 text-xs font-semibold uppercase tracking-wide">
                     {primaryRole}
                   </span>
@@ -301,7 +328,10 @@ export default function SettingsPage() {
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mt-6">
                 {roleDetails.highlights.map((item) => (
-                  <div key={item} className="rounded-lg bg-white/10 px-4 py-3 text-sm text-white/90">
+                  <div
+                    key={item}
+                    className="rounded-lg bg-white/10 px-4 py-3 text-sm text-white/90"
+                  >
                     {item}
                   </div>
                 ))}

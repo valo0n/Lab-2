@@ -48,6 +48,11 @@ const SettingsPage = lazy(() => import("./pages/account/SettingsPage"));
 
 // Admin
 const AdminDashboard = lazy(() => import("./pages/admin/AdminDashboard"));
+const AdminOrders = lazy(() => import("./pages/admin/AdminOrders"));
+const AdminProducts = lazy(() => import("./pages/admin/AdminProducts"));
+const AdminUsers = lazy(() => import("./pages/admin/AdminUsers"));
+const AdminPlaceholder = lazy(() => import("./pages/admin/AdminPlaceholder"));
+import RoleRoute from "./pages/admin/RoleRoute";
 
 // Info
 const AboutUsPage = lazy(() => import("./pages/info/AboutUsPage"));
@@ -113,7 +118,78 @@ function App() {
               />
               <Route path="/settings" element={<SettingsPage />} />
               {/* Admin */}
-              <Route path="/admin" element={<AdminDashboard />} />
+              <Route
+                path="/admin"
+                element={
+                  <RoleRoute>
+                    <AdminDashboard />
+                  </RoleRoute>
+                }
+              />
+              <Route
+                path="/admin/orders"
+                element={
+                  <RoleRoute allowedRoles={["admin", "manager", "support"]}>
+                    <AdminOrders />
+                  </RoleRoute>
+                }
+              />
+              <Route
+                path="/admin/products"
+                element={
+                  <RoleRoute allowedRoles={["admin", "manager", "editor"]}>
+                    <AdminProducts />
+                  </RoleRoute>
+                }
+              />
+              <Route
+                path="/admin/categories"
+                element={
+                  <RoleRoute allowedRoles={["admin", "manager", "editor"]}>
+                    <AdminPlaceholder title="Categories" />
+                  </RoleRoute>
+                }
+              />
+              <Route
+                path="/admin/brands"
+                element={
+                  <RoleRoute allowedRoles={["admin", "manager", "editor"]}>
+                    <AdminPlaceholder title="Brands" />
+                  </RoleRoute>
+                }
+              />
+              <Route
+                path="/admin/users"
+                element={
+                  <RoleRoute allowedRoles={["admin"]}>
+                    <AdminUsers />
+                  </RoleRoute>
+                }
+              />
+              <Route
+                path="/admin/coupons"
+                element={
+                  <RoleRoute allowedRoles={["admin", "manager"]}>
+                    <AdminPlaceholder title="Coupons" />
+                  </RoleRoute>
+                }
+              />
+              <Route
+                path="/admin/reviews"
+                element={
+                  <RoleRoute allowedRoles={["admin", "manager", "support"]}>
+                    <AdminPlaceholder title="Reviews" />
+                  </RoleRoute>
+                }
+              />
+              <Route
+                path="/admin/settings"
+                element={
+                  <RoleRoute allowedRoles={["admin"]}>
+                    <AdminPlaceholder title="Settings" />
+                  </RoleRoute>
+                }
+              />
               {/* Info */}
               <Route path="/about-us" element={<AboutUsPage />} />
               <Route path="/blog" element={<BlogPage />} />

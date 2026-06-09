@@ -1,6 +1,9 @@
 const router = require("express").Router();
 const ctrl = require("../controllers/user.controller");
-const { auth } = require("../middleware/auth.middleware");
+const { auth, authorize } = require("../middleware/auth.middleware");
+
+// Admin — lista e të gjithë userave
+router.get("/admin/all", auth, authorize("manage_users"), ctrl.getAllUsers);
 
 router.get("/me", auth, ctrl.getProfile);
 router.get("/dashboard", auth, ctrl.getDashboard);

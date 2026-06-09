@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { Link } from "react-router-dom";
+import AdminPanelLink from "../../components/common/AdminPanelLink";
 import {
   Layers,
   ShoppingBag,
@@ -133,7 +134,10 @@ export default function DashboardPage() {
   const stats = dashboardData?.stats || { total: 0, pending: 0, completed: 0 };
   const recentOrders = dashboardData?.recentOrders || [];
   const cards = dashboardData?.cards || [];
-  const browsingHistory = useMemo(() => dashboardData?.browsing || [], [dashboardData]);
+  const browsingHistory = useMemo(
+    () => dashboardData?.browsing || [],
+    [dashboardData],
+  );
 
   const displayName = currentUser?.name || user.name || "User";
   const displayEmail = currentUser?.email || user.email || "";
@@ -178,6 +182,7 @@ export default function DashboardPage() {
           {/* Sidebar */}
           <aside className="bg-white rounded-lg border border-gray-100 overflow-hidden h-fit">
             <nav className="flex flex-col py-2">
+              <AdminPanelLink />
               {sidebarItems.map((item) => {
                 const Icon = item.icon;
                 const isActive = item.name === "Dashboard";

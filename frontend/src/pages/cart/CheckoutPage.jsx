@@ -207,7 +207,18 @@ function CheckoutInner() {
     }, 0);
 
     const shippingValue = subtotalValue > 0 ? 0 : 0;
-    const discountValue = 0;
+
+    // Lexon coupon-in e aplikuar te shporta (i kapur ne localStorage)
+    let discountValue = 0;
+    try {
+      const stored = JSON.parse(
+        localStorage.getItem("appliedCoupon") || "null",
+      );
+      if (stored && stored.discount) {
+        discountValue = Math.min(Number(stored.discount), subtotalValue);
+      }
+    } catch (_) {}
+
     const taxValue = subtotalValue * 0.18;
     const totalValue = Math.max(
       0,
@@ -314,6 +325,7 @@ function CheckoutInner() {
         }
 
         clearCart();
+        localStorage.removeItem("appliedCoupon");
         alert("Order placed successfully!");
         navigate("/success", {
           state: { orderNumber: order.order_number, order },
@@ -337,6 +349,7 @@ function CheckoutInner() {
         JSON.stringify([...guestOrders, guestOrder]),
       );
       clearCart();
+      localStorage.removeItem("appliedCoupon");
 
       alert("Order placed successfully!");
       navigate("/success");
@@ -425,6 +438,7 @@ function CheckoutInner() {
       }
 
       clearCart();
+      localStorage.removeItem("appliedCoupon");
       navigate("/success", {
         state: { orderNumber: order.order_number, order },
       });

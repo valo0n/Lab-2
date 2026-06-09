@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import AdminPanelLink from "../../components/common/AdminPanelLink";
 import {
   Layers,
   ShoppingBag,
@@ -151,6 +152,7 @@ export default function OrderHistoryPage() {
           {/* Sidebar */}
           <aside className="bg-white rounded-lg border border-gray-100 overflow-hidden h-fit">
             <nav className="flex flex-col py-2">
+              <AdminPanelLink />
               {sidebarItems.map((item) => {
                 const Icon = item.icon;
                 const isActive = item.name === "Order History";

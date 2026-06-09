@@ -26,6 +26,36 @@ function parseExpiry(expiry) {
 }
 
 module.exports = {
+  // GET /api/users/admin/all — lista e të gjithë userave (vetëm admin/manage_users)
+  getAllUsers: async (req, res, next) => {
+    try {
+      const users = await prisma.user.findMany({
+        orderBy: { created_at: "desc" },
+        select: {
+          id: true,
+          first_name: true,
+          last_name: true,
+          email: true,
+          is_active: true,
+          created_at: true,
+          user_roles: { include: { role: { select: { name: true } } } },
+        },
+      });
+      const data = users.map((u) => ({
+        id: u.id,
+        first_name: u.first_name,
+        last_name: u.last_name,
+        email: u.email,
+        is_active: u.is_active,
+        created_at: u.created_at,
+        roles: u.user_roles.map((ur) => ur.role.name),
+      }));
+      res.json({ success: true, data });
+    } catch (error) {
+      next(error);
+    }
+  },
+
   // GET /api/users/me — te dhenat e userit te loguar
   getProfile: async (req, res, next) => {
     try {

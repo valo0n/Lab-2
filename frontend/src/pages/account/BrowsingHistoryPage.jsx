@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
+import AdminPanelLink from "../../components/common/AdminPanelLink";
 import {
   Layers,
   ShoppingBag,
@@ -138,7 +139,10 @@ export default function BrowsingHistoryPage() {
         grouped.get(date).push(item);
       });
 
-    return Array.from(grouped.entries()).map(([date, products]) => ({ date, products }));
+    return Array.from(grouped.entries()).map(([date, products]) => ({
+      date,
+      products,
+    }));
   }, [browsing]);
 
   const toggleCart = () => {
@@ -196,6 +200,7 @@ export default function BrowsingHistoryPage() {
           {/* Sidebar */}
           <aside className="bg-white rounded-lg border border-gray-100 overflow-hidden h-fit">
             <nav className="flex flex-col py-2">
+              <AdminPanelLink />
               {sidebarItems.map((item) => {
                 const Icon = item.icon;
                 const isActive = item.name === "Browsing History";

@@ -18,7 +18,7 @@ export default function AdminDashboard() {
       try {
         const [products, orders] = await Promise.all([
           api.get("/products").catch(() => ({ data: { data: [] } })),
-          api.get("/orders/all").catch(() => ({ data: { data: [] } })),
+          api.get("/orders/admin/all").catch(() => ({ data: { data: [] } })),
         ]);
         const orderList = orders.data?.data || [];
         const revenue = orderList.reduce(

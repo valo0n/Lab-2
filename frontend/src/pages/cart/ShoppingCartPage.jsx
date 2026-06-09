@@ -205,30 +205,32 @@ export default function ShoppingCartPage() {
           },
           body: JSON.stringify({
             code: coupon.trim(),
-            subtotal,
+            order_total: subtotal,
           }),
         });
 
-        if (res.ok) {
-          const data = await res.json();
-          const discountValue =
-            data.data?.discount ||
-            data.discount ||
-            data.data?.discount_amount ||
-            0;
+        const data = await res.json().catch(() => ({}));
 
-          setCouponDiscount(Number(discountValue));
-          setCouponMessage("Coupon applied successfully.");
-          return;
+        if (res.ok && data.success) {
+          const discountValue = Number(data.data?.discount || 0);
+          setCouponDiscount(discountValue);
+          setCouponMessage(
+            `Coupon applied — you saved $${discountValue.toFixed(2)}.`,
+          );
+          // Ruaje që ta përdorë checkout-i
+          localStorage.setItem(
+            "appliedCoupon",
+            JSON.stringify({ code: coupon.trim(), discount: discountValue }),
+          );
+        } else {
+          setCouponDiscount(0);
+          setCouponMessage(data.message || "Invalid coupon code.");
+          localStorage.removeItem("appliedCoupon");
         }
-      }
-
-      if (coupon.trim().toUpperCase() === "SAVE10") {
-        setCouponDiscount(subtotal * 0.1);
-        setCouponMessage("Coupon applied successfully.");
       } else {
         setCouponDiscount(0);
-        setCouponMessage("Invalid coupon code.");
+        setCouponMessage("Please log in to use a coupon.");
+        localStorage.removeItem("appliedCoupon");
       }
     } catch (err) {
       console.error("Coupon error:", err);

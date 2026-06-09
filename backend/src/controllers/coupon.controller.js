@@ -9,7 +9,8 @@ const mapCoupon = (coupon) => ({
 module.exports = {
   validate: async (req, res, next) => {
     try {
-      const { code, order_total = 0 } = req.body;
+      const { code, order_total, subtotal } = req.body;
+      const base = Number(order_total ?? subtotal ?? 0);
       const coupon = await prisma.coupon.findUnique({ where: { code } });
       if (!coupon || !coupon.is_active) {
         return res
@@ -26,17 +27,26 @@ module.exports = {
           .status(400)
           .json({ success: false, message: "Coupon ka skaduar" });
       }
-      if (Number(order_total) < Number(coupon.min_order)) {
-        return res
-          .status(400)
-          .json({ success: false, message: "Shuma minimale nuk u arrit" });
+      if (base < Number(coupon.min_order)) {
+        return res.status(400).json({
+          success: false,
+          message: `Shuma minimale eshte ${Number(coupon.min_order)}`,
+        });
       }
       if (coupon.usage_limit && coupon.times_used >= coupon.usage_limit) {
         return res
           .status(400)
           .json({ success: false, message: "Coupon i shfrytezuar plotesisht" });
       }
-      res.json({ success: true, data: mapCoupon(coupon) });
+
+      // Llogarit zbritjen sipas tipit
+      const value = Number(coupon.value);
+      let discount =
+        coupon.type === "percentage" ? (base * value) / 100 : value;
+      discount = Math.min(discount, base); // mos e kalo totalin
+      discount = Math.round(discount * 100) / 100;
+
+      res.json({ success: true, data: { ...mapCoupon(coupon), discount } });
     } catch (error) {
       next(error);
     }
