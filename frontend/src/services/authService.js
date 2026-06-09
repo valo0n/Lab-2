@@ -1,4 +1,5 @@
 import api from "./api";
+import { connectSocket, disconnectSocket } from "./socket";
 
 const setSession = (data) => {
   if (data?.token) {
@@ -7,6 +8,9 @@ const setSession = (data) => {
   if (data?.user) {
     localStorage.setItem("user", JSON.stringify(data.user));
   }
+  // Lidh socket-in dhe njofto komponentët për real-time
+  connectSocket();
+  window.dispatchEvent(new Event("auth-changed"));
 };
 
 export const authService = {
@@ -77,6 +81,8 @@ export const authService = {
     localStorage.removeItem("user");
     localStorage.removeItem("pendingVerificationEmail");
     localStorage.removeItem("resetPasswordEmail");
+    disconnectSocket();
+    window.dispatchEvent(new Event("auth-changed"));
   },
 
   getCurrentUser: () => {

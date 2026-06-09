@@ -2,6 +2,7 @@ import { lazy, Suspense } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { CartProvider } from "./context/CartContext";
 import { WishlistProvider } from "./context/WishlistContext";
+import RealtimeNotifications from "./components/common/RealtimeNotifications";
 
 // Faqet ngarkohen me lazy loading — çdo faqe vjen vetëm kur shkon te ajo (code splitting)
 // Home
@@ -125,6 +126,7 @@ function App() {
               <Route path="*" element={<NotFoundPage />} />
             </Routes>
           </Suspense>
+          <RealtimeNotifications />
         </Router>
       </WishlistProvider>
     </CartProvider>

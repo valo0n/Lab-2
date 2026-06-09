@@ -1,4 +1,5 @@
 const { prisma } = require("../config/database");
+const notificationService = require("../services/notification.service");
 
 // Helper — gjeneron numer porosie unik
 function generateOrderNumber() {
@@ -102,6 +103,15 @@ module.exports = {
         },
         include: { items: true },
       });
+
+      // Njoftim live për përdoruesin
+      try {
+        await notificationService.notify(userId, {
+          type: "order",
+          title: "Porosia u pranua",
+          message: `Porosia #${order.order_number} u krijua me sukses.`,
+        });
+      } catch (_) {}
 
       res.status(201).json({ success: true, data: order });
     } catch (error) {
@@ -232,6 +242,16 @@ module.exports = {
         where: { id },
         data: { status, updated_by: req.user.id },
       });
+
+      // Njoftim live te pronari i porosisë
+      try {
+        await notificationService.notify(order.user_id, {
+          type: "order",
+          title: "Statusi i porosisë u përditësua",
+          message: `Porosia #${order.order_number} tani është: ${status}.`,
+        });
+      } catch (_) {}
+
       res.json({ success: true, data: order });
     } catch (error) {
       next(error);
@@ -254,6 +274,15 @@ module.exports = {
           updated_by: req.user.id,
         },
       });
+
+      try {
+        await notificationService.notify(order.user_id, {
+          type: "order",
+          title: "Gjurmimi u shtua",
+          message: `Porosia #${order.order_number}: ${tracking_number || "tracking"} (${carrier || ""}).`,
+        });
+      } catch (_) {}
+
       res.json({ success: true, data: order });
     } catch (error) {
       next(error);
