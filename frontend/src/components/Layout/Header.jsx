@@ -8,7 +8,8 @@ import {
 import CartPopup from "../popups/CartPopup";
 import WishlistPopup from "../popups/WishlistPopup";
 import AccountPopup from "../popups/AccountPopup";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useState } from "react";
 import { useCart } from "../../context/CartContext";
 import { useWishlist } from "../../context/WishlistContext";
 
@@ -21,6 +22,12 @@ export default function Header({
   accountOpen,
   onAccountToggle,
 }) {
+  const navigate = useNavigate();
+  const [searchQ, setSearchQ] = useState("");
+  const goSearch = () => {
+    const q = searchQ.trim();
+    if (q) navigate(`/search-results?q=${encodeURIComponent(q)}`);
+  };
   const { cartCount } = useCart(); // ← KËTU, para return
   const { wishlistCount } = useWishlist();
   return (
@@ -57,10 +64,14 @@ export default function Header({
         <div className="hidden sm:flex flex-1 max-w-2xl relative">
           <input
             type="text"
+            value={searchQ}
+            onChange={(e) => setSearchQ(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && goSearch()}
             placeholder="Search for anything..."
             className="w-full h-10 sm:h-11 px-4 pr-12 rounded text-dark placeholder:text-gray-300 focus:outline-none text-sm"
           />
           <button
+            onClick={goSearch}
             className="absolute right-0 top-0 h-10 sm:h-11 px-3 sm:px-4 bg-primary hover:bg-primary-600 rounded-r text-white"
             aria-label="Search"
           >
