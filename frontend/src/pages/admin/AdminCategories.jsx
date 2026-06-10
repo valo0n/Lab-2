@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Trash2, Pencil, Plus, X } from "lucide-react";
 import AdminLayout from "./AdminLayout";
 import api from "../../services/api";
+import DataToolbar from "../../components/common/DataToolbar";
 
 const empty = { name: "", is_active: true };
 
@@ -83,6 +84,7 @@ export default function AdminCategories() {
           >
             <Plus size={14} /> Shto
           </button>
+          <DataToolbar entity="categories" canImport onImported={load} />
         </div>
 
         {showForm && (

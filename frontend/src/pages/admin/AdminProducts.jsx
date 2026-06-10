@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import AdminLayout from "./AdminLayout";
 import api from "../../services/api";
+import DataToolbar from "../../components/common/DataToolbar";
 
 export default function AdminProducts() {
   const [products, setProducts] = useState([]);
@@ -49,6 +50,7 @@ export default function AdminProducts() {
             placeholder="Kërko produkt..."
             className="border border-gray-200 rounded px-3 py-1.5 text-sm focus:outline-none focus:border-primary w-56"
           />
+          <DataToolbar entity="products" canImport onImported={load} />
         </div>
 
         {error && (

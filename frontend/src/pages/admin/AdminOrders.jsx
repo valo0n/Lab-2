@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import AdminLayout from "./AdminLayout";
 import api from "../../services/api";
+import DataToolbar from "../../components/common/DataToolbar";
 
 const STATUSES = [
   "pending",
@@ -75,6 +76,7 @@ export default function AdminOrders() {
           >
             Rifresko
           </button>
+          <DataToolbar entity="orders" />
         </div>
 
         {error && (

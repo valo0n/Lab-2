@@ -56,6 +56,7 @@ const AdminBrands = lazy(() => import("./pages/admin/AdminBrands"));
 const AdminCoupons = lazy(() => import("./pages/admin/AdminCoupons"));
 const AdminReviews = lazy(() => import("./pages/admin/AdminReviews"));
 const AdminSettings = lazy(() => import("./pages/admin/AdminSettings"));
+const SearchResultsPage = lazy(() => import("./pages/shop/SearchResultsPage"));
 const AdminPlaceholder = lazy(() => import("./pages/admin/AdminPlaceholder"));
 import RoleRoute from "./pages/admin/RoleRoute";
 
@@ -122,6 +123,8 @@ function App() {
                 element={<BrowsingHistoryPage />}
               />
               <Route path="/settings" element={<SettingsPage />} />
+              <Route path="/search-results" element={<SearchResultsPage />} />
+
               {/* Admin */}
               <Route
                 path="/admin"

@@ -56,7 +56,7 @@ export const adminMenuItems = [
 // Merr rolin kryesor te userit (i pari nga lista)
 export function getUserRole() {
   try {
-    const user = JSON.parse(localStorage.getItem("user") || "{}");
+    const user = JSON.parse(sessionStorage.getItem("user") || "{}");
     const roles = (user.roles || []).map((r) => r.toLowerCase());
     if (roles.includes("admin") || roles.includes("super_admin"))
       return "admin";

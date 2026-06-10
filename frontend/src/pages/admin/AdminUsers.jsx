@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import AdminLayout from "./AdminLayout";
 import api from "../../services/api";
+import DataToolbar from "../../components/common/DataToolbar";
 
 const roleColor = (r) => {
   const v = (r || "").toLowerCase();
@@ -58,6 +59,7 @@ export default function AdminUsers() {
             placeholder="Kërko user..."
             className="border border-gray-200 rounded px-3 py-1.5 text-sm focus:outline-none focus:border-primary w-56"
           />
+          <DataToolbar entity="users" canImport onImported={load} />
         </div>
 
         {error && (

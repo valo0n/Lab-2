@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Trash2, Pencil, Plus, X } from "lucide-react";
 import AdminLayout from "./AdminLayout";
 import api from "../../services/api";
+import DataToolbar from "../../components/common/DataToolbar";
 
 const empty = {
   code: "",
@@ -100,6 +101,7 @@ export default function AdminCoupons() {
           >
             <Plus size={14} /> Shto
           </button>
+          <DataToolbar entity="coupons" canImport onImported={load} />
         </div>
 
         {showForm && (
