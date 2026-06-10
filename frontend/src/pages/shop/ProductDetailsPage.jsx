@@ -255,7 +255,7 @@ export default function ProductDetailsPage() {
   const handleAddToWishlist = async () => {
     if (!product) return;
 
-    const token = localStorage.getItem("token");
+    const token = sessionStorage.getItem("token");
 
     if (!token) {
       addToLocalStorageList("wishlist", product);
@@ -293,7 +293,7 @@ export default function ProductDetailsPage() {
   const handleAddToCompare = async () => {
     if (!product) return;
 
-    const token = localStorage.getItem("token");
+    const token = sessionStorage.getItem("token");
 
     if (!token) {
       addToLocalStorageList("compare", product);
@@ -331,7 +331,7 @@ export default function ProductDetailsPage() {
   const handleAddToCart = async () => {
     if (!product) return;
 
-    const token = localStorage.getItem("token");
+    const token = sessionStorage.getItem("token");
 
     if (!token) {
       const oldCart = JSON.parse(localStorage.getItem("cart") || "[]");

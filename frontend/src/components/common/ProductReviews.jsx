@@ -13,7 +13,7 @@ export default function ProductReviews({ productId }) {
   const [message, setMessage] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
-  const token = localStorage.getItem("token");
+  const token = sessionStorage.getItem("token");
 
   const load = async () => {
     setLoading(true);
