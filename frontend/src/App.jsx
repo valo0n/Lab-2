@@ -51,6 +51,11 @@ const AdminDashboard = lazy(() => import("./pages/admin/AdminDashboard"));
 const AdminOrders = lazy(() => import("./pages/admin/AdminOrders"));
 const AdminProducts = lazy(() => import("./pages/admin/AdminProducts"));
 const AdminUsers = lazy(() => import("./pages/admin/AdminUsers"));
+const AdminCategories = lazy(() => import("./pages/admin/AdminCategories"));
+const AdminBrands = lazy(() => import("./pages/admin/AdminBrands"));
+const AdminCoupons = lazy(() => import("./pages/admin/AdminCoupons"));
+const AdminReviews = lazy(() => import("./pages/admin/AdminReviews"));
+const AdminSettings = lazy(() => import("./pages/admin/AdminSettings"));
 const AdminPlaceholder = lazy(() => import("./pages/admin/AdminPlaceholder"));
 import RoleRoute from "./pages/admin/RoleRoute";
 
@@ -146,7 +151,7 @@ function App() {
                 path="/admin/categories"
                 element={
                   <RoleRoute allowedRoles={["admin", "manager", "editor"]}>
-                    <AdminPlaceholder title="Categories" />
+                    <AdminCategories />
                   </RoleRoute>
                 }
               />
@@ -154,7 +159,7 @@ function App() {
                 path="/admin/brands"
                 element={
                   <RoleRoute allowedRoles={["admin", "manager", "editor"]}>
-                    <AdminPlaceholder title="Brands" />
+                    <AdminBrands />
                   </RoleRoute>
                 }
               />
@@ -170,7 +175,7 @@ function App() {
                 path="/admin/coupons"
                 element={
                   <RoleRoute allowedRoles={["admin", "manager"]}>
-                    <AdminPlaceholder title="Coupons" />
+                    <AdminCoupons />
                   </RoleRoute>
                 }
               />
@@ -178,7 +183,7 @@ function App() {
                 path="/admin/reviews"
                 element={
                   <RoleRoute allowedRoles={["admin", "manager", "support"]}>
-                    <AdminPlaceholder title="Reviews" />
+                    <AdminReviews />
                   </RoleRoute>
                 }
               />
@@ -186,7 +191,7 @@ function App() {
                 path="/admin/settings"
                 element={
                   <RoleRoute allowedRoles={["admin"]}>
-                    <AdminPlaceholder title="Settings" />
+                    <AdminSettings />
                   </RoleRoute>
                 }
               />

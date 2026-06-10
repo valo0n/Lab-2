@@ -89,42 +89,6 @@ export default function AdminDashboard() {
           );
         })}
       </div>
-
-      <div className="bg-white rounded-lg border border-gray-100 p-6">
-        <h3 className="font-bold text-dark mb-2">
-          Çfarë mund të bësh me rolin "{role}":
-        </h3>
-        <ul className="text-sm text-dark-300 space-y-1 list-disc list-inside">
-          {role === "admin" && (
-            <>
-              <li>Menaxho produkte, kategori, brande</li>
-              <li>Menaxho porositë dhe statusin</li>
-              <li>Menaxho përdoruesit dhe settings</li>
-              <li>Menaxho kuponë dhe reviews</li>
-            </>
-          )}
-          {role === "manager" && (
-            <>
-              <li>Menaxho produkte, kategori, brande</li>
-              <li>Menaxho porositë dhe statusin</li>
-              <li>Menaxho kuponë dhe reviews</li>
-            </>
-          )}
-          {role === "editor" && (
-            <>
-              <li>Menaxho produkte, kategori, brande</li>
-              <li>(S'ke qasje te porositë ose përdoruesit)</li>
-            </>
-          )}
-          {role === "support" && (
-            <>
-              <li>Shiko dhe përditëso porositë</li>
-              <li>Menaxho reviews</li>
-              <li>(S'ke qasje te produktet ose përdoruesit)</li>
-            </>
-          )}
-        </ul>
-      </div>
     </AdminLayout>
   );
 }

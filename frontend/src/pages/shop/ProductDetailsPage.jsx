@@ -4,6 +4,7 @@ import TopBar from "../../components/layout/TopBar";
 import Header from "../../components/layout/Header";
 import Navigation from "../../components/layout/Navigation";
 import Footer from "../../components/layout/Footer";
+import ProductReviews from "../../components/common/ProductReviews";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 const SERVER_URL = API_URL.replace("/api", "");
@@ -817,76 +818,81 @@ export default function ProductDetailsPage() {
             </div>
           </div>
 
-          <div className="mt-6 grid grid-cols-1 gap-8 lg:grid-cols-3">
-            <div className="lg:col-span-1">
-              <h3 className="mb-3 text-base font-semibold text-gray-900">
-                Description
-              </h3>
+          {activeTab !== "review" && (
+            <div className="mt-6 grid grid-cols-1 gap-8 lg:grid-cols-3">
+              <div className="lg:col-span-1">
+                <h3 className="mb-3 text-base font-semibold text-gray-900">
+                  Description
+                </h3>
 
-              <p className="text-sm leading-7 text-gray-600">
-                {product.description ||
-                  "No description available for this product."}
-              </p>
-
-              {(product.longDescription || product.long_description) && (
-                <p className="mt-4 text-sm leading-7 text-gray-600">
-                  {product.longDescription || product.long_description}
+                <p className="text-sm leading-7 text-gray-600">
+                  {product.description ||
+                    "No description available for this product."}
                 </p>
-              )}
-            </div>
 
-            <div>
-              <h3 className="mb-3 text-base font-semibold text-gray-900">
-                Feature
-              </h3>
+                {(product.longDescription || product.long_description) && (
+                  <p className="mt-4 text-sm leading-7 text-gray-600">
+                    {product.longDescription || product.long_description}
+                  </p>
+                )}
+              </div>
 
-              <ul className="space-y-3 text-sm text-gray-600">
-                {(Array.isArray(product.features) && product.features.length > 0
-                  ? product.features
-                  : [
-                      "Free 1 Year Warranty",
-                      "Free Shipping & Fasted Delivery",
-                      "100% Money-back guarantee",
-                      "24/7 Customer support",
-                      "Secure payment method",
-                    ]
-                ).map((feature) => (
-                  <li key={feature}>✔ {feature}</li>
-                ))}
-              </ul>
-            </div>
+              <div>
+                <h3 className="mb-3 text-base font-semibold text-gray-900">
+                  Feature
+                </h3>
 
-            <div>
-              <h3 className="mb-3 text-base font-semibold text-gray-900">
-                Shipping Information
-              </h3>
+                <ul className="space-y-3 text-sm text-gray-600">
+                  {(Array.isArray(product.features) &&
+                  product.features.length > 0
+                    ? product.features
+                    : [
+                        "Free 1 Year Warranty",
+                        "Free Shipping & Fasted Delivery",
+                        "100% Money-back guarantee",
+                        "24/7 Customer support",
+                        "Secure payment method",
+                      ]
+                  ).map((feature) => (
+                    <li key={feature}>✔ {feature}</li>
+                  ))}
+                </ul>
+              </div>
 
-              <div className="space-y-3 text-sm text-gray-600">
-                <p>
-                  <span className="font-medium text-gray-800">Courier:</span>{" "}
-                  2-4 days, free shipping
-                </p>
-                <p>
-                  <span className="font-medium text-gray-800">
-                    Local Shipping:
-                  </span>{" "}
-                  up to one week, $19.00
-                </p>
-                <p>
-                  <span className="font-medium text-gray-800">
-                    UPS Ground Shipping:
-                  </span>{" "}
-                  4-6 days, $29.00
-                </p>
-                <p>
-                  <span className="font-medium text-gray-800">
-                    Unishop Global Export:
-                  </span>{" "}
-                  3-4 days, $39.00
-                </p>
+              <div>
+                <h3 className="mb-3 text-base font-semibold text-gray-900">
+                  Shipping Information
+                </h3>
+
+                <div className="space-y-3 text-sm text-gray-600">
+                  <p>
+                    <span className="font-medium text-gray-800">Courier:</span>{" "}
+                    2-4 days, free shipping
+                  </p>
+                  <p>
+                    <span className="font-medium text-gray-800">
+                      Local Shipping:
+                    </span>{" "}
+                    up to one week, $19.00
+                  </p>
+                  <p>
+                    <span className="font-medium text-gray-800">
+                      UPS Ground Shipping:
+                    </span>{" "}
+                    4-6 days, $29.00
+                  </p>
+                  <p>
+                    <span className="font-medium text-gray-800">
+                      Unishop Global Export:
+                    </span>{" "}
+                    3-4 days, $39.00
+                  </p>
+                </div>
               </div>
             </div>
-          </div>
+          )}
+
+          {activeTab === "review" && <ProductReviews productId={product.id} />}
         </section>
 
         {relatedProducts.length > 0 && (
