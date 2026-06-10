@@ -140,6 +140,28 @@ export default function ProductDetailsPage() {
 
       setProduct(productData);
 
+      // Regjistro shikimin te Browsing History (MongoDB) — vetëm për usera të loguar
+      const browseToken = sessionStorage.getItem("token");
+      if (browseToken && productData?.id) {
+        fetch(`${API_URL}/users/browsing`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${browseToken}`,
+          },
+          body: JSON.stringify({
+            product_id: productData.id,
+            product_name: productData.name,
+            product_slug: productData.slug,
+            product_image: productData.images?.[0]?.image_url || null,
+            product_price: productData.price,
+            compare_price: productData.compare_price || null,
+            category: productData.category?.name || null,
+            brand: productData.brand?.name || null,
+          }),
+        }).catch(() => {});
+      }
+
       const images =
         Array.isArray(productData.images) && productData.images.length > 0
           ? productData.images.map((img) => getImageUrl(img))

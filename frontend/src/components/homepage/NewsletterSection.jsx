@@ -1,12 +1,31 @@
 import { useState } from "react";
 
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+
 export default function NewsletterSection() {
   const [email, setEmail] = useState("");
+  const [message, setMessage] = useState("");
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Subscribed:", email);
-    setEmail("");
+    if (!email.trim()) return;
+    try {
+      const res = await fetch(`${API_URL}/newsletter/subscribe`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: email.trim(), source: "homepage" }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && data.success !== false) {
+        setMessage("U abonove me sukses! 🎉");
+        setEmail("");
+      } else {
+        setMessage(data.message || "Abonimi dështoi, provo sërish.");
+      }
+    } catch (_) {
+      setMessage("Abonimi dështoi, provo sërish.");
+    }
+    setTimeout(() => setMessage(""), 4000);
   };
 
   return (
@@ -42,6 +61,9 @@ export default function NewsletterSection() {
             SUBSCRIBE →
           </button>
         </form>
+        {message && (
+          <p className="text-center text-sm mt-3 text-white/90">{message}</p>
+        )}
 
         {/* Brand logos — hidden on small mobile, scrollable on tablet */}
         <div className="hidden sm:flex items-center justify-center gap-6 md:gap-12 mt-8 sm:mt-10 text-gray-300 text-xs sm:text-sm font-semibold opacity-70 flex-wrap">
