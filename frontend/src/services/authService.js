@@ -3,10 +3,10 @@ import { connectSocket, disconnectSocket } from "./socket";
 
 const setSession = (data) => {
   if (data?.token) {
-    localStorage.setItem("token", data.token);
+    sessionStorage.setItem("token", data.token);
   }
   if (data?.user) {
-    localStorage.setItem("user", JSON.stringify(data.user));
+    sessionStorage.setItem("user", JSON.stringify(data.user));
   }
   // Lidh socket-in dhe njofto komponentët për real-time
   connectSocket();
@@ -77,8 +77,8 @@ export const authService = {
     } catch {
       // edhe nëse dështon, pastrojmë gjendjen lokale
     }
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
+    sessionStorage.removeItem("token");
+    sessionStorage.removeItem("user");
     localStorage.removeItem("pendingVerificationEmail");
     localStorage.removeItem("resetPasswordEmail");
     disconnectSocket();
@@ -86,7 +86,7 @@ export const authService = {
   },
 
   getCurrentUser: () => {
-    const user = localStorage.getItem("user");
+    const user = sessionStorage.getItem("user");
     return user ? JSON.parse(user) : null;
   },
 
@@ -96,11 +96,11 @@ export const authService = {
   getResetPasswordEmail: () => localStorage.getItem("resetPasswordEmail") || "",
 
   isLoggedIn: () => {
-    return !!localStorage.getItem("token");
+    return !!sessionStorage.getItem("token");
   },
 
   isAdmin: () => {
-    const user = localStorage.getItem("user");
+    const user = sessionStorage.getItem("user");
     if (!user) return false;
     try {
       const parsed = JSON.parse(user);

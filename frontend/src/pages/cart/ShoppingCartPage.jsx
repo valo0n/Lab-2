@@ -190,7 +190,7 @@ export default function ShoppingCartPage() {
       return;
     }
 
-    const token = localStorage.getItem("token");
+    const token = sessionStorage.getItem("token");
 
     try {
       setActionLoading(true);

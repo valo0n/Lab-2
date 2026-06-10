@@ -12,7 +12,7 @@ const api = axios.create({
 // Request — shton access token-in nga localStorage nëse ka
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem("token");
+    const token = sessionStorage.getItem("token");
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -39,14 +39,14 @@ api.interceptors.response.use(
         const res = await api.post("/auth/refresh");
         const newToken = res.data?.data?.token;
         if (newToken) {
-          localStorage.setItem("token", newToken);
+          sessionStorage.setItem("token", newToken);
           original.headers.Authorization = `Bearer ${newToken}`;
           return api(original);
         }
       } catch (e) {
         // Refresh dështoi → seanca mbaroi
-        localStorage.removeItem("token");
-        localStorage.removeItem("user");
+        sessionStorage.removeItem("token");
+        sessionStorage.removeItem("user");
         if (window.location.pathname !== "/signin") {
           window.location.href = "/signin";
         }

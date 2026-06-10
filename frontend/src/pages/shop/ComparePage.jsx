@@ -151,7 +151,7 @@ export default function ComparePage() {
       setLoading(true);
       setError("");
 
-      const token = localStorage.getItem("token");
+      const token = sessionStorage.getItem("token");
 
       if (token) {
         try {
@@ -198,7 +198,7 @@ export default function ComparePage() {
   }
 
   async function removeFromCompare(productId) {
-    const token = localStorage.getItem("token");
+    const token = sessionStorage.getItem("token");
 
     setProducts((currentProducts) => {
       const updatedProducts = currentProducts.filter(
@@ -225,7 +225,7 @@ export default function ComparePage() {
 
   async function handleAddToCart(product) {
     const productId = getProductId(product);
-    const token = localStorage.getItem("token");
+    const token = sessionStorage.getItem("token");
 
     if (!token) {
       const oldCart = JSON.parse(localStorage.getItem("cart") || "[]");
@@ -282,7 +282,7 @@ export default function ComparePage() {
 
   async function handleAddToWishlist(product) {
     const productId = getProductId(product);
-    const token = localStorage.getItem("token");
+    const token = sessionStorage.getItem("token");
 
     if (!token) {
       addToLocalStorageList("wishlist", product);

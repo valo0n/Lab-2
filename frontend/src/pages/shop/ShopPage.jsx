@@ -235,7 +235,7 @@ export default function ShopPage() {
   const handleAddToCart = async (product) => {
     addToCart(product);
     alert("Product added to cart");
-    const token = localStorage.getItem("token");
+    const token = sessionStorage.getItem("token");
 
     if (!token) {
       const oldCart = JSON.parse(localStorage.getItem("cart") || "[]");

@@ -281,7 +281,7 @@ function CheckoutInner() {
       setPlacingOrder(true);
       setError("");
 
-      const token = localStorage.getItem("token");
+      const token = sessionStorage.getItem("token");
 
       const orderPayload = {
         payment_method: paymentMethod,
@@ -362,7 +362,7 @@ function CheckoutInner() {
   }
 
   async function payWithCard(order) {
-    const token = localStorage.getItem("token");
+    const token = sessionStorage.getItem("token");
 
     // 1) Krijo PaymentIntent ne backend dhe merr clientSecret
     let clientSecret;

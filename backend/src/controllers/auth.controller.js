@@ -42,7 +42,7 @@ const issueRefreshToken = async (res, user) => {
     secure: process.env.NODE_ENV === "production", // vetëm HTTPS në prodhim
     sameSite: "lax", // mbrojtje bazë CSRF
     path: "/api/auth", // dërgohet vetëm te /api/auth/* (refresh, logout)
-    maxAge: expiresAt.getTime() - Date.now(),
+    // Pa maxAge => session cookie: fshihet kur mbyllet shfletuesi (logout ne mbyllje)
   });
 };
 
